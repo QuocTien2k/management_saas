@@ -1,9 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Đọc HttpOnly Cookies
+  app.use(cookieParser());
+
+  // Global Exception Filter
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  // Global Response Interceptor
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // Thêm Global ValidationPipe
   app.useGlobalPipes(
