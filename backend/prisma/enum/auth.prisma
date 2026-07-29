@@ -1,0 +1,15 @@
+enum Role {
+  SUPER_ADMIN // Admin toàn hệ thống SaaS
+  USER        // Người dùng thông thường
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+enum UserStatus {
+  PENDING   // Mới đăng ký/được mời, chưa verify
+  ACTIVE    // Đang hoạt động
+  INACTIVE  // Bị khóa tài khoản
+}
