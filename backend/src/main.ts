@@ -26,6 +26,9 @@ async function bootstrap() {
     }),
   );
 
+  // Global Prefix
+  app.setGlobalPrefix('api/v1');
+
   // Cấu hình CORS
   app.enableCors({
     origin: process.env.ALLOWED_ORIGINS
@@ -34,7 +37,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 3001;
   await app.listen(port);
   
   console.log(`🚀 Server is running at http://localhost:${port}`);
