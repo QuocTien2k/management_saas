@@ -17,6 +17,8 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 import { useLoading } from '@/hooks/use-loading';
 import { getErrorMessage } from '@/lib/error';
+import { getAuthInputClass } from '@/lib/utils';
+import { FormError } from '@/components/ui/form-error';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -148,13 +150,9 @@ export default function LoginForm() {
               type="email"
               placeholder="example@domain.com"
               {...register('email')}
-              className={`bg-slate-950/60 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.email ? 'border-rose-500 focus:ring-rose-500' : ''
-              }`}
+              className={getAuthInputClass(!!errors.email)}
             />
-            {errors.email && (
-              <p className="text-xs text-rose-400">{errors.email.message}</p>
-            )}
+            <FormError message={errors.email?.message} />
           </div>
 
           <div className="space-y-2">
@@ -173,9 +171,7 @@ export default function LoginForm() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 {...register('password')}
-                className={`bg-slate-950/60 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500 focus:border-blue-500 pr-10 ${
-                  errors.password ? 'border-rose-500 focus:ring-rose-500' : ''
-                }`}
+                className={getAuthInputClass(!!errors.password, 'pr-10')}
               />
               <button
                 type="button"
@@ -185,9 +181,7 @@ export default function LoginForm() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {errors.password && (
-              <p className="text-xs text-rose-400">{errors.password.message}</p>
-            )}
+            <FormError message={errors.password?.message} />
           </div>
 
           <Button

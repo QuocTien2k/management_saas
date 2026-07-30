@@ -15,6 +15,8 @@ import { Loader2, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 import { useLoading } from '@/hooks/use-loading';
 import { getErrorMessage } from '@/lib/error';
+import { getAuthInputClass } from '@/lib/utils';
+import { FormError } from '@/components/ui/form-error';
 
 const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -109,13 +111,9 @@ export default function ForgotPasswordForm() {
                 type="email"
                 placeholder="example@domain.com"
                 {...register('email')}
-                className={`bg-slate-950/60 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.email ? 'border-rose-500 focus:ring-rose-500' : ''
-                }`}
+                className={getAuthInputClass(!!errors.email)}
               />
-              {errors.email && (
-                <p className="text-xs text-rose-400">{errors.email.message}</p>
-              )}
+              <FormError message={errors.email?.message} />
             </div>
 
             <Button
