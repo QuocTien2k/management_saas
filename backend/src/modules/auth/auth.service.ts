@@ -17,6 +17,7 @@ import { GoogleLoginDto } from './dto/google-login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtPayload } from '../../common/types/jwt-payload.interface';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {
     this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
@@ -309,10 +311,13 @@ export class AuthService {
 
     // In log mã token ra console (dùng cho debug/development)
     console.log(`[FORGOT PASSWORD] Reset Token cho ${dto.email}: ${rawResetToken}`);
-    console.log(`[FORGOT PASSWORD] Đường dẫn giả định: http://localhost:3000/reset-password?token=${rawResetToken}`);
+    console.log(`[FORGOT PASSWORD] Đường dẫn giả định: http://localhost:3001/reset-password?token=${rawResetToken}`);
+
+    // Gửi email khôi phục mật khẩu thực tế
+    await this.mailService.sendPasswordResetEmail(user.email, user.fullname, rawResetToken);
 
     return {
-      message: 'Mã khôi phục mật khẩu đã được tạo',
+      message: 'Mã khôi phục mật khẩu đã được gửi đến email của bạn',
       // Chỉ trả về token trong môi trường phát triển để dev dễ test
       resetToken: process.env.NODE_ENV !== 'production' ? rawResetToken : undefined,
     };
