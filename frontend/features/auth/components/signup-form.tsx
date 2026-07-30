@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 import { useLoading } from '@/hooks/use-loading';
+import { getErrorMessage } from '@/lib/error';
 
 const signupSchema = z
   .object({
@@ -63,9 +64,7 @@ export default function SignupForm() {
         toast.error(res.error?.message || 'Đăng ký tài khoản thất bại');
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.'
-      );
+      toast.error(getErrorMessage(error, 'Có lỗi xảy ra, vui lòng thử lại sau.'));
     } finally {
       stopLoading();
     }

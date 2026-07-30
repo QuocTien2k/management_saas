@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 import { useLoading } from '@/hooks/use-loading';
+import { getErrorMessage } from '@/lib/error';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -61,9 +62,7 @@ export default function LoginForm() {
         toast.error(res.error?.message || 'Đăng nhập thất bại');
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.error?.message || 'Email hoặc mật khẩu không chính xác'
-      );
+      toast.error(getErrorMessage(error, 'Email hoặc mật khẩu không chính xác'));
     } finally {
       stopLoading();
     }
@@ -83,9 +82,7 @@ export default function LoginForm() {
         toast.error(res.error?.message || 'Đăng nhập Google thất bại');
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.error?.message || 'Không thể liên kết tài khoản Google'
-      );
+      toast.error(getErrorMessage(error, 'Không thể liên kết tài khoản Google'));
     } finally {
       setIsGoogleLoading(false);
     }
@@ -204,12 +201,12 @@ export default function LoginForm() {
         </form>
 
         <div className="relative flex py-2 items-center">
-          <div className="flex-grow border-t border-slate-800"></div>
-          <span className="flex-shrink mx-4 text-slate-500 text-xs uppercase font-medium">Hoặc tiếp tục với</span>
-          <div className="flex-grow border-t border-slate-800"></div>
+          <div className="grow border-t border-slate-800"></div>
+          <span className="shrink mx-4 text-slate-500 text-xs uppercase font-medium">Hoặc tiếp tục với</span>
+          <div className="grow border-t border-slate-800"></div>
         </div>
 
-        <div className="flex flex-col items-center justify-center min-h-[44px]">
+        <div className="flex flex-col items-center justify-center min-h-11">
           {isGoogleLoading ? (
             <div className="flex items-center gap-2 text-slate-400 text-sm">
               <Loader2 className="h-4 w-4 animate-spin text-blue-500" />

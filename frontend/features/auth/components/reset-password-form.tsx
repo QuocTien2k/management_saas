@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 import { useLoading } from '@/hooks/use-loading';
+import { getErrorMessage } from '@/lib/error';
 
 const resetPasswordSchema = z
   .object({
@@ -73,8 +74,7 @@ export default function ResetPasswordForm() {
       }
     } catch (error: any) {
       toast.error(
-        error.response?.data?.error?.message ||
-          'Mã khôi phục mật khẩu không hợp lệ hoặc đã hết hạn'
+        getErrorMessage(error, 'Mã khôi phục mật khẩu không hợp lệ hoặc đã hết hạn')
       );
     } finally {
       stopLoading();

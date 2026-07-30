@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 import { useLoading } from '@/hooks/use-loading';
+import { getErrorMessage } from '@/lib/error';
 
 const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -53,9 +54,7 @@ export default function ForgotPasswordForm() {
         toast.error(res.error?.message || 'Có lỗi xảy ra');
       }
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.error?.message || 'Không tìm thấy tài khoản với email này'
-      );
+      toast.error(getErrorMessage(error, 'Không tìm thấy tài khoản với email này'));
     } finally {
       stopLoading();
     }
