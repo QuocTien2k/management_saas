@@ -1,0 +1,21 @@
+model Workspace {
+  id          String   @id @default(uuid())
+  name        String   // Tên không gian làm việc (ví dụ: "Acme Corp")
+  slug        String   @unique // URL-friendly string (ví dụ: "acme-corp")
+  logo        String?  // URL logo của Workspace
+  description String?  @db.Text
+
+  // Soft delete & Audit
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  members     WorkspaceMember[]
+  // subscription  Subscription?    // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
+  // notifications Notification[]   // Quan hệ 1-N (Tùy chọn filter notification theo Workspace)
+
+  @@index([slug])
+  @@index([createdAt])
+  @@map("workspaces")
+}

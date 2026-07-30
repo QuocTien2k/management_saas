@@ -18,9 +18,9 @@ model User {
   // Relations (Module Auth & Workspace)
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  workspaceMemberships WorkspaceMember[]
   
   // Note: uncomment các dòng dưới đây khi tạo các nhóm model tiếp theo
-  // workspaceMemberships WorkspaceMember[]
   // notifications        Notification[]
   // assignedTasks        Task[]                @relation("TaskAssignee")
   // reportedTasks        Task[]                @relation("TaskReporter")

@@ -1,0 +1,22 @@
+model WorkspaceMember {
+  id          String        @id @default(uuid())
+  
+  workspaceId String        @map("workspace_id")
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId      String        @map("user_id")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role        WorkspaceRole @default(MEMBER)
+  status      MemberStatus  @default(ACTIVE)
+
+  joinedAt    DateTime?     @map("joined_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Đảm bảo 1 user không thể xuất hiện 2 lần trong cùng 1 workspace
+  @@unique([workspaceId, userId])
+  @@index([workspaceId, role])
+  @@index([userId])
+  @@map("workspace_members")
+}

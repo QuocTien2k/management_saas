@@ -1,0 +1,12 @@
+enum WorkspaceRole {
+  OWNER   // Chủ sở hữu Workspace (quyền cao nhất)
+  ADMIN   // Quản trị viên (quản lý thành viên, dự án)
+  MEMBER  // Thành viên chính thức (tạo/sửa task)
+  VIEWER  // Chỉ có quyền xem
+}
+
+enum MemberStatus {
+  INVITED  // Đã gửi lời mời qua email, chưa chấp nhận
+  ACTIVE   // Đã tham gia và đang hoạt động
+  SUSPENDED// Bị khóa tạm thời trong workspace này
+}
