@@ -13,6 +13,7 @@ model Workspace {
   // Relations
   members     WorkspaceMember[]
   invitations WorkspaceInvitation[]
+  projects    Project[]
   // subscription  Subscription?    // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
   // notifications Notification[]   // Quan hệ 1-N (Tùy chọn filter notification theo Workspace)
 

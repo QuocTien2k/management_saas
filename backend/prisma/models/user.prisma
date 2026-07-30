@@ -21,11 +21,12 @@ model User {
   workspaceMemberships WorkspaceMember[]
   sentInvitations      WorkspaceInvitation[] @relation("SentInvitations")
   
+  assignedTasks        Task[]                @relation("TaskAssignee")
+  reportedTasks        Task[]                @relation("TaskReporter")
+  comments             Comment[]
+
   // Note: uncomment các dòng dưới đây khi tạo các nhóm model tiếp theo
   // notifications        Notification[]
-  // assignedTasks        Task[]                @relation("TaskAssignee")
-  // reportedTasks        Task[]                @relation("TaskReporter")
-  // comments             Comment[]
 
   @@index([status, role])
   @@index([createdAt])

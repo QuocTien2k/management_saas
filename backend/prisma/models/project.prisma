@@ -1,0 +1,23 @@
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  key         String        // Mã viết tắt dự án (ví dụ: "SAAS", "MOB")
+  description String?       @db.Text
+  status      ProjectStatus @default(IN_PROGRESS)
+
+  workspaceId String        @map("workspace_id")
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Soft delete & Audit
+  deletedAt   DateTime?     @map("deleted_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  tasks       Task[]
+
+  // Key của dự án không được trùng trong cùng 1 Workspace
+  @@unique([workspaceId, key])
+  @@index([workspaceId, status])
+  @@map("projects")
+}

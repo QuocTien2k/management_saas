@@ -1,0 +1,20 @@
+enum ProjectStatus {
+  PLANNING    // Đang lên kế hoạch
+  IN_PROGRESS // Đang thực hiện
+  COMPLETED   // Đã hoàn thành
+  ARCHIVED    // Đã đóng/lưu trữ
+}
+
+enum TaskStatus {
+  TODO        // Cần làm
+  IN_PROGRESS // Đang làm
+  IN_REVIEW   // Đang duyệt / Code review
+  DONE        // Hoàn thành
+}
+
+enum TaskPriority {
+  LOW      // Thấp
+  MEDIUM   // Trung bình
+  HIGH     // Cao
+  URGENT   // Khẩn cấp
+}
