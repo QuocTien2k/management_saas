@@ -21,9 +21,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const resContent: any = exception.getResponse();
-      
+
       message = exception.message;
-      code = exception.name.replace('Exception', '').replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '');
+      code = exception.name
+        .replace('Exception', '')
+        .replace(/([A-Z])/g, '_$1')
+        .toUpperCase()
+        .replace(/^_/, '');
 
       if (typeof resContent === 'object' && resContent !== null) {
         if (resContent.message) {

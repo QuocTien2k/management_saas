@@ -77,7 +77,9 @@ export class AuthService {
 
     if (existingUser) {
       if (existingUser.deletedAt) {
-        throw new ConflictException('Email này thuộc tài khoản đã bị xóa trước đó');
+        throw new ConflictException(
+          'Email này thuộc tài khoản đã bị xóa trước đó',
+        );
       }
       throw new ConflictException('Email đã được đăng ký trong hệ thống');
     }
@@ -151,7 +153,9 @@ export class AuthService {
       });
       googlePayload = ticket.getPayload();
     } catch (error) {
-      throw new UnauthorizedException('Token Google không hợp lệ hoặc đã hết hạn');
+      throw new UnauthorizedException(
+        'Token Google không hợp lệ hoặc đã hết hạn',
+      );
     }
 
     if (!googlePayload || !googlePayload.email) {
@@ -170,10 +174,14 @@ export class AuthService {
 
     if (user) {
       if (user.deletedAt) {
-        throw new UnauthorizedException('Tài khoản liên kết với Google đã bị xóa');
+        throw new UnauthorizedException(
+          'Tài khoản liên kết với Google đã bị xóa',
+        );
       }
       if (user.status === 'INACTIVE') {
-        throw new UnauthorizedException('Tài khoản liên kết với Google đã bị khóa');
+        throw new UnauthorizedException(
+          'Tài khoản liên kết với Google đã bị khóa',
+        );
       }
     } else {
       // Nếu chưa có googleId, tìm theo email
@@ -183,10 +191,14 @@ export class AuthService {
 
       if (user) {
         if (user.deletedAt) {
-          throw new UnauthorizedException('Tài khoản liên kết với Email này đã bị xóa');
+          throw new UnauthorizedException(
+            'Tài khoản liên kết với Email này đã bị xóa',
+          );
         }
         if (user.status === 'INACTIVE') {
-          throw new UnauthorizedException('Tài khoản liên kết với Email này đã bị khóa');
+          throw new UnauthorizedException(
+            'Tài khoản liên kết với Email này đã bị khóa',
+          );
         }
 
         // Liên kết tài khoản Google
@@ -258,7 +270,9 @@ export class AuthService {
           where: { userId: dbToken.userId },
         });
       }
-      throw new UnauthorizedException('Refresh Token không hợp lệ hoặc đã hết hạn');
+      throw new UnauthorizedException(
+        'Refresh Token không hợp lệ hoặc đã hết hạn',
+      );
     }
 
     // Xóa token cũ ngay khi sử dụng (Xoay vòng token)
@@ -291,12 +305,14 @@ export class AuthService {
     }
 
     if (user.provider !== AuthProvider.LOCAL) {
-      throw new BadRequestException('Tài khoản này được đăng ký qua MXH, không thể đổi mật khẩu thường');
+      throw new BadRequestException(
+        'Tài khoản này được đăng ký qua MXH, không thể đổi mật khẩu thường',
+      );
     }
 
     const rawResetToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = this.hashToken(rawResetToken);
-    
+
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Hết hạn sau 15 phút
 
@@ -314,12 +330,17 @@ export class AuthService {
     // console.log(`[FORGOT PASSWORD] Đường dẫn giả định: http://localhost:3001/reset-password?token=${rawResetToken}`);
 
     // Gửi email khôi phục mật khẩu thực tế
-    await this.mailService.sendPasswordResetEmail(user.email, user.fullname, rawResetToken);
+    await this.mailService.sendPasswordResetEmail(
+      user.email,
+      user.fullname,
+      rawResetToken,
+    );
 
     return {
       message: 'Mã khôi phục mật khẩu đã được gửi đến email của bạn',
       // Chỉ trả về token trong môi trường phát triển để dev dễ test
-      resetToken: process.env.NODE_ENV !== 'production' ? rawResetToken : undefined,
+      resetToken:
+        process.env.NODE_ENV !== 'production' ? rawResetToken : undefined,
     };
   }
 
@@ -333,7 +354,9 @@ export class AuthService {
     });
 
     if (!dbToken || dbToken.isUsed || dbToken.expiresAt < new Date()) {
-      throw new BadRequestException('Mã khôi phục mật khẩu không hợp lệ hoặc đã hết hạn');
+      throw new BadRequestException(
+        'Mã khôi phục mật khẩu không hợp lệ hoặc đã hết hạn',
+      );
     }
 
     // Cập nhật mật khẩu mới của User

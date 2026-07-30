@@ -28,7 +28,11 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   // Thiết lập HttpOnly Cookie chứa refresh token
-  private setRefreshTokenCookie(res: Response, refreshToken: string, expiresAt: Date) {
+  private setRefreshTokenCookie(
+    res: Response,
+    refreshToken: string,
+    expiresAt: Date,
+  ) {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -63,7 +67,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.login(dto);
-    this.setRefreshTokenCookie(res, result.refreshToken, result.refreshTokenExpiresAt);
+    this.setRefreshTokenCookie(
+      res,
+      result.refreshToken,
+      result.refreshTokenExpiresAt,
+    );
     return {
       user: result.user,
       accessToken: result.accessToken,
@@ -78,7 +86,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.googleLogin(dto);
-    this.setRefreshTokenCookie(res, result.refreshToken, result.refreshTokenExpiresAt);
+    this.setRefreshTokenCookie(
+      res,
+      result.refreshToken,
+      result.refreshTokenExpiresAt,
+    );
     return {
       user: result.user,
       accessToken: result.accessToken,
@@ -94,7 +106,11 @@ export class AuthController {
   ) {
     const refreshToken = req.cookies?.['refreshToken'];
     const result = await this.authService.refresh(refreshToken);
-    this.setRefreshTokenCookie(res, result.refreshToken, result.refreshTokenExpiresAt);
+    this.setRefreshTokenCookie(
+      res,
+      result.refreshToken,
+      result.refreshTokenExpiresAt,
+    );
     return {
       user: result.user,
       accessToken: result.accessToken,
@@ -104,10 +120,7 @@ export class AuthController {
   // 5. Đăng xuất (Logout)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.['refreshToken'];
     await this.authService.logout(refreshToken);
     this.clearRefreshTokenCookie(res);

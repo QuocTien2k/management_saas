@@ -20,7 +20,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Người dùng không tồn tại hoặc token không hợp lệ');
+      throw new UnauthorizedException(
+        'Người dùng không tồn tại hoặc token không hợp lệ',
+      );
     }
 
     if (user.deletedAt) {
