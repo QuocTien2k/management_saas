@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
+import { useLoading } from '@/hooks/use-loading';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -29,7 +30,7 @@ export default function LoginForm() {
   const setAuth = useAuthStore((state) => state.setAuth);
   
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, startLoading, stopLoading } = useLoading(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
@@ -48,7 +49,7 @@ export default function LoginForm() {
 
   // Xử lý đăng nhập thông thường
   const onSubmit = async (data: LoginDto) => {
-    setIsLoading(true);
+    startLoading();
     try {
       const res = await authService.login(data);
       if (res.success && res.data) {
@@ -64,7 +65,7 @@ export default function LoginForm() {
         error.response?.data?.error?.message || 'Email hoặc mật khẩu không chính xác'
       );
     } finally {
-      setIsLoading(false);
+      stopLoading();
     }
   };
 

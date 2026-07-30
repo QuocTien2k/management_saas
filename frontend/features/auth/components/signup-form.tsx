@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
+import { useLoading } from '@/hooks/use-loading';
 
 const signupSchema = z
   .object({
@@ -33,7 +34,7 @@ export default function SignupForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, startLoading, stopLoading } = useLoading(false);
 
   const {
     register,
@@ -50,7 +51,7 @@ export default function SignupForm() {
   });
 
   const onSubmit = async (data: SignupDto) => {
-    setIsLoading(true);
+    startLoading();
     try {
       // Loại bỏ confirmPassword trước khi gửi lên API
       const { confirmPassword, ...signupData } = data;
@@ -66,7 +67,7 @@ export default function SignupForm() {
         error.response?.data?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.'
       );
     } finally {
-      setIsLoading(false);
+      stopLoading();
     }
   };
 

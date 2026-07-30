@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
+import { useLoading } from '@/hooks/use-loading';
 
 const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -21,7 +22,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, startLoading, stopLoading } = useLoading(false);
   const [isSent, setIsSent] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
 
@@ -37,7 +38,7 @@ export default function ForgotPasswordForm() {
   });
 
   const onSubmit = async (data: ForgotPasswordDto) => {
-    setIsLoading(true);
+    startLoading();
     try {
       const res = await authService.forgotPassword(data.email);
       if (res.success) {
@@ -56,7 +57,7 @@ export default function ForgotPasswordForm() {
         error.response?.data?.error?.message || 'Không tìm thấy tài khoản với email này'
       );
     } finally {
-      setIsLoading(false);
+      stopLoading();
     }
   };
 

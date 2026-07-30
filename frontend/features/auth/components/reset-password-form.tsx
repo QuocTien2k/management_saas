@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
+import { useLoading } from '@/hooks/use-loading';
 
 const resetPasswordSchema = z
   .object({
@@ -34,7 +35,7 @@ export default function ResetPasswordForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, startLoading, stopLoading } = useLoading(false);
   const [isTokenMissing, setIsTokenMissing] = useState(false);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function ResetPasswordForm() {
       toast.error('Token không hợp lệ');
       return;
     }
-    setIsLoading(true);
+    startLoading();
     try {
       const res = await authService.resetPassword(token, data.password);
       if (res.success) {
@@ -76,7 +77,7 @@ export default function ResetPasswordForm() {
           'Mã khôi phục mật khẩu không hợp lệ hoặc đã hết hạn'
       );
     } finally {
-      setIsLoading(false);
+      stopLoading();
     }
   };
 
