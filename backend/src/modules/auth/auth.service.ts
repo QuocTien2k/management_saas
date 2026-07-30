@@ -310,8 +310,8 @@ export class AuthService {
     });
 
     // In log mã token ra console (dùng cho debug/development)
-    console.log(`[FORGOT PASSWORD] Reset Token cho ${dto.email}: ${rawResetToken}`);
-    console.log(`[FORGOT PASSWORD] Đường dẫn giả định: http://localhost:3001/reset-password?token=${rawResetToken}`);
+    // console.log(`[FORGOT PASSWORD] Reset Token cho ${dto.email}: ${rawResetToken}`);
+    // console.log(`[FORGOT PASSWORD] Đường dẫn giả định: http://localhost:3001/reset-password?token=${rawResetToken}`);
 
     // Gửi email khôi phục mật khẩu thực tế
     await this.mailService.sendPasswordResetEmail(user.email, user.fullname, rawResetToken);

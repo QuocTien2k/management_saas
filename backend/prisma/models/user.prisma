@@ -19,6 +19,7 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   workspaceMemberships WorkspaceMember[]
+  sentInvitations      WorkspaceInvitation[] @relation("SentInvitations")
   
   // Note: uncomment các dòng dưới đây khi tạo các nhóm model tiếp theo
   // notifications        Notification[]
