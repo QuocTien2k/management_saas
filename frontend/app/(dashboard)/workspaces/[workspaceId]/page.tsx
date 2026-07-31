@@ -14,11 +14,13 @@ import {
 
 import { useWorkspaceDetail } from '@/features/workspace/hooks/use-workspace';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
+import { useProjects } from '@/features/project/hooks/use-projects';
 import { WorkspaceAvatar } from '@/features/workspace/components/workspace-avatar';
 import { InviteMemberDialog } from '@/features/workspace/components/invite-member-dialog';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProjectCard } from '@/features/project/components/project-card';
 
 export default function WorkspaceDashboardPage() {
   const params = useParams();
@@ -26,6 +28,7 @@ export default function WorkspaceDashboardPage() {
 
   const { data: workspace, isLoading: isWsLoading } = useWorkspaceDetail(workspaceId);
   const { data: members } = useWorkspaceMembers(workspaceId);
+  const { data: projects } = useProjects(workspaceId);
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
 
   return (
@@ -66,7 +69,7 @@ export default function WorkspaceDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">{workspace?._count?.projects || 0}</div>
+            <div className="text-2xl font-bold tracking-tight">{projects?.length ?? workspace?._count?.projects ?? 0}</div>
             <p className="text-[11px] text-muted-foreground mt-1">Dự án đang hoạt động</p>
           </CardContent>
         </Card>
@@ -114,20 +117,33 @@ export default function WorkspaceDashboardPage() {
       {/* Member summary & Recent Activity preview */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2 shadow-xs border-border/80">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">Dự án gần đây</CardTitle>
-            <CardDescription className="text-xs">Các dự án mới nhất trong Workspace này.</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <div>
+              <CardTitle className="text-base font-semibold">Dự án gần đây</CardTitle>
+              <CardDescription className="text-xs">Các dự án mới nhất trong Workspace này.</CardDescription>
+            </div>
+            <Link href={`/workspaces/${workspaceId}/projects`}>
+              <Button size="xs" variant="ghost" className="text-xs">Xem tất cả</Button>
+            </Link>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border border-dashed border-border/70 rounded-xl bg-muted/20">
-              <FolderKanbanIcon className="size-9 stroke-1.5 mb-2.5 opacity-40 text-primary" />
-              <p className="text-xs font-medium">Chưa có dự án nào được tạo.</p>
-              <Link href={`/workspaces/${workspaceId}/projects`} className="mt-3">
-                <Button size="xs" variant="outline" className="gap-1.5 shadow-xs">
-                  <PlusIcon className="size-3.5" /> Tạo dự án đầu tiên
-                </Button>
-              </Link>
-            </div>
+            {projects && projects.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {projects.slice(0, 4).map((proj) => (
+                  <ProjectCard key={proj.id} project={proj} workspaceId={workspaceId} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border border-dashed border-border/70 rounded-xl bg-muted/20">
+                <FolderKanbanIcon className="size-9 stroke-1.5 mb-2.5 opacity-40 text-primary" />
+                <p className="text-xs font-medium">Chưa có dự án nào được tạo.</p>
+                <Link href={`/workspaces/${workspaceId}/projects`} className="mt-3">
+                  <Button size="xs" variant="outline" className="gap-1.5 shadow-xs">
+                    <PlusIcon className="size-3.5" /> Tạo dự án đầu tiên
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
 
