@@ -59,6 +59,14 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    // Nếu gặp lỗi 403 Forbidden (Không có quyền truy cập)
+    if (error.response?.status === 403 && typeof window !== 'undefined') {
+      if (window.location.pathname !== '/403') {
+        window.location.href = '/403';
+      }
+      return Promise.reject(error);
+    }
+
     // Nếu không có response hoặc mã lỗi không phải là 401 Unauthorized
     if (!error.response || error.response.status !== 401) {
       return Promise.reject(error);
