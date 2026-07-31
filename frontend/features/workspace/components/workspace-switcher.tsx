@@ -56,7 +56,7 @@ export function WorkspaceSwitcher() {
             <button className="flex w-full items-center justify-between gap-2.5 rounded-xl border border-border bg-background p-2.5 text-left text-sm font-medium shadow-xs transition-all hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/50 dark:bg-card">
               <div className="flex items-center gap-2.5 overflow-hidden">
                 {currentWorkspace ? (
-                  <WorkspaceAvatar name={currentWorkspace.name} logoUrl={currentWorkspace.logoUrl} size="sm" />
+                  <WorkspaceAvatar name={currentWorkspace.name} logo={currentWorkspace.logo || currentWorkspace.logoUrl} size="sm" />
                 ) : (
                   <div className="flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
                     <Building2Icon className="size-4" />
@@ -91,7 +91,7 @@ export function WorkspaceSwitcher() {
                   className="flex items-center justify-between cursor-pointer py-2"
                 >
                   <div className="flex items-center gap-2.5 overflow-hidden">
-                    <WorkspaceAvatar name={ws.name} logoUrl={ws.logoUrl} size="sm" />
+                    <WorkspaceAvatar name={ws.name} logo={ws.logo || ws.logoUrl} size="sm" />
                     <div className="flex flex-col overflow-hidden">
                       <span className="truncate font-medium text-sm">{ws.name}</span>
                       <span className="text-xs text-muted-foreground capitalize">

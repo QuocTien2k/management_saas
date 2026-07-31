@@ -5,6 +5,7 @@ export interface Workspace {
   name: string;
   slug: string;
   description?: string | null;
+  logo?: string | null;
   logoUrl?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -43,12 +44,14 @@ export interface WorkspaceInvitation {
 export interface CreateWorkspaceInput {
   name: string;
   description?: string;
+  logo?: string;
   logoUrl?: string;
 }
 
 export interface UpdateWorkspaceInput {
   name?: string;
   description?: string;
+  logo?: string;
   logoUrl?: string;
 }
 

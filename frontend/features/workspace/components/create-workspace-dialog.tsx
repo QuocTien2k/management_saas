@@ -53,7 +53,7 @@ export function CreateWorkspaceDialog({
     defaultValues: {
       name: '',
       description: '',
-      logoUrl: '',
+      logo: '',
     },
   });
 
@@ -114,10 +114,10 @@ export function CreateWorkspaceDialog({
             <Input
               id="ws-logo"
               placeholder="https://example.com/logo.png"
-              {...register('logoUrl')}
+              {...register('logo')}
             />
-            {errors.logoUrl && (
-              <p className="text-xs text-destructive">{errors.logoUrl.message}</p>
+            {errors.logo && (
+              <p className="text-xs text-destructive">{errors.logo.message}</p>
             )}
           </div>
 

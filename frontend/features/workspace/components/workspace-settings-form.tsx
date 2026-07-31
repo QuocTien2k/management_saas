@@ -44,7 +44,7 @@ export function WorkspaceSettingsForm({
     defaultValues: {
       name: workspace.name,
       description: workspace.description || '',
-      logoUrl: workspace.logoUrl || '',
+      logo: workspace.logo || workspace.logoUrl || '',
     },
   });
 
@@ -118,10 +118,10 @@ export function WorkspaceSettingsForm({
               <Input
                 id="edit-logo"
                 disabled={!isAdmin}
-                {...register('logoUrl')}
+                {...register('logo')}
               />
-              {errors.logoUrl && (
-                <p className="text-xs text-destructive">{errors.logoUrl.message}</p>
+              {errors.logo && (
+                <p className="text-xs text-destructive">{errors.logo.message}</p>
               )}
             </div>
           </CardContent>

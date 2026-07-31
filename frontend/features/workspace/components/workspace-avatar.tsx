@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface WorkspaceAvatarProps {
   name: string;
+  logo?: string | null;
   logoUrl?: string | null;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -20,6 +21,7 @@ const colorPairs = [
 
 export function WorkspaceAvatar({
   name,
+  logo,
   logoUrl,
   className,
   size = 'md',
@@ -48,9 +50,11 @@ export function WorkspaceAvatar({
     lg: 'size-12 text-base rounded-xl',
   };
 
+  const imageSrc = logo || logoUrl;
+
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
-      {logoUrl && <AvatarImage src={logoUrl} alt={name} />}
+      {imageSrc && <AvatarImage src={imageSrc} alt={name} />}
       <AvatarFallback
         className={cn(
           'font-semibold rounded-inherit tracking-wider',

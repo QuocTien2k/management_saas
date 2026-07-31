@@ -17,7 +17,7 @@ export function WorkspaceCard({ workspace }: WorkspaceCardProps) {
       <Card className="h-full border border-border transition-all duration-200 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 dark:bg-card">
         <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
           <div className="flex items-center gap-3">
-            <WorkspaceAvatar name={workspace.name} logoUrl={workspace.logoUrl} size="lg" />
+            <WorkspaceAvatar name={workspace.name} logo={workspace.logo || workspace.logoUrl} size="lg" />
             <div>
               <CardTitle className="group-hover:text-primary transition-colors text-base font-semibold">
                 {workspace.name}

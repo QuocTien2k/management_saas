@@ -6,7 +6,7 @@ export const createWorkspaceSchema = z.object({
     .min(2, 'Tên workspace phải có ít nhất 2 ký tự')
     .max(50, 'Tên workspace tối đa 50 ký tự'),
   description: z.string().max(200, 'Mô tả tối đa 200 ký tự').optional(),
-  logoUrl: z.string().url('Logo URL không hợp lệ').or(z.literal('')).optional(),
+  logo: z.string().url('Logo URL không hợp lệ').or(z.literal('')).optional(),
 });
 
 export type CreateWorkspaceFormValues = z.infer<typeof createWorkspaceSchema>;
