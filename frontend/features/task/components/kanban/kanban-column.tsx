@@ -32,7 +32,7 @@ export function KanbanColumn({
   const headerStyle = columnHeaderColors[id] || columnHeaderColors.TODO;
 
   return (
-    <div className="flex flex-col w-full min-w-[270px] max-w-xs rounded-xl bg-muted/40 p-3 border border-border/50">
+    <div className="flex flex-col w-full min-w-67.5 max-w-xs rounded-xl bg-muted/40 p-3 border border-border/50">
       {/* Column Header */}
       <div className="flex items-center justify-between pb-3 mb-2 border-b border-border/40">
         <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export function KanbanColumn({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex-1 min-h-[350px] transition-colors rounded-lg p-1 ${
+            className={`flex-1 min-h-87.5 transition-colors rounded-lg p-1 ${
               snapshot.isDraggingOver ? 'bg-primary/5 ring-1 ring-primary/20' : ''
             }`}
           >

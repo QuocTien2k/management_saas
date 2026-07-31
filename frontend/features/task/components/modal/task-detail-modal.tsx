@@ -1,33 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Trash2Icon,
-  XIcon,
-  CalendarIcon,
-  UserIcon,
-  AlertCircleIcon,
-  CheckCircle2Icon,
-  ClockIcon,
-  Loader2Icon,
-  Edit3Icon,
-} from 'lucide-react';
+import { Trash2Icon, Loader2Icon, Edit3Icon, CheckIcon, XIcon } from 'lucide-react';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { CommentSection } from '@/features/comment/components/comment-section';
 
-import { Task, TaskPriority, TaskStatus } from '../../types/task.types';
+import { TaskPriority, TaskStatus } from '../../types/task.types';
 import { useUpdateTask, useDeleteTask, useTaskDetail } from '../../hooks/use-tasks';
 
 interface MemberOption {
   id: string;
   fullname: string;
+  email: string;
   avatar?: string | null;
 }
 
@@ -38,6 +28,20 @@ interface TaskDetailModalProps {
   onOpenChange: (open: boolean) => void;
   members?: MemberOption[];
 }
+
+const statusMap: Record<TaskStatus, string> = {
+  TODO: 'Cần làm',
+  IN_PROGRESS: 'Đang làm',
+  IN_REVIEW: 'Đang duyệt',
+  DONE: 'Hoàn thành',
+};
+
+const priorityMap: Record<TaskPriority, string> = {
+  URGENT: 'Khẩn cấp',
+  HIGH: 'Cao',
+  MEDIUM: 'Trung bình',
+  LOW: 'Thấp',
+};
 
 export function TaskDetailModal({
   taskId,
@@ -63,6 +67,8 @@ export function TaskDetailModal({
   }, [task]);
 
   if (!open || !taskId) return null;
+
+  const selectedMember = members?.find((m) => m.id === task?.assigneeId);
 
   const handleTitleSave = async () => {
     if (!title.trim() || title === task?.title) {
@@ -154,19 +160,23 @@ export function TaskDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-162.5 max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[660px] max-h-[88vh] overflow-y-auto p-6 gap-6 rounded-2xl">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2Icon className="size-6 animate-spin text-primary mr-2" /> Đang tải thông tin task...
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground space-y-3">
+            <Loader2Icon className="size-8 animate-spin text-primary" />
+            <p className="text-sm font-medium">Đang tải thông tin công việc...</p>
           </div>
         ) : task ? (
-          <div className="space-y-5">
-            {/* Modal Header Actions */}
-            <div className="flex items-center justify-between border-b border-border/50 pb-3">
+          <div className="space-y-6">
+            {/* Header: Trạng thái & Nút xóa */}
+            <div className="flex items-center justify-between border-b border-border/60 pb-4">
               <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trạng thái:</span>
                 <Select value={task.status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
-                  <SelectTrigger className="h-8 text-xs font-semibold w-35">
-                    <SelectValue />
+                  <SelectTrigger className="h-8 text-xs font-bold w-[150px] bg-background">
+                    <SelectValue>
+                      {statusMap[task.status] || 'Cần làm'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="TODO">Cần làm</SelectItem>
@@ -177,56 +187,56 @@ export function TaskDetailModal({
                 </Select>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
-                  onClick={handleDelete}
-                  title="Xóa công việc"
-                >
-                  <Trash2Icon className="size-4" />
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-muted-foreground hover:text-destructive cursor-pointer rounded-lg hover:bg-destructive/10"
+                onClick={handleDelete}
+                title="Xóa công việc"
+              >
+                <Trash2Icon className="size-4" />
+              </Button>
             </div>
 
-            {/* Title (Inline Edit) */}
+            {/* Tiêu đề Task (Inline Edit) */}
             <div className="space-y-1">
               {isEditingTitle ? (
                 <div className="flex items-center gap-2">
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="text-base font-bold h-9"
+                    className="text-lg font-bold h-10 px-3"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleTitleSave();
                       if (e.key === 'Escape') setIsEditingTitle(false);
                     }}
                   />
-                  <Button size="xs" onClick={handleTitleSave}>
+                  <Button size="sm" onClick={handleTitleSave} className="h-10 px-4">
                     Lưu
                   </Button>
                 </div>
               ) : (
                 <h2
-                  className="text-lg font-bold text-foreground hover:bg-muted/50 p-1.5 -ml-1.5 rounded-md cursor-pointer transition-colors flex items-center justify-between group"
+                  className="text-xl font-bold text-foreground hover:bg-muted/40 p-2 -ml-2 rounded-lg cursor-pointer transition-colors flex items-center justify-between group"
                   onClick={() => setIsEditingTitle(true)}
                 >
                   <span>{task.title}</span>
-                  <Edit3Icon className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Edit3Icon className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0" />
                 </h2>
               )}
             </div>
 
             {/* Attributes Grid (Priority, Assignee, Due Date) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-muted/30 border border-border/60">
               {/* Priority */}
-              <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-muted-foreground">Độ ưu tiên</span>
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">Độ ưu tiên</span>
                 <Select value={task.priority} onValueChange={(v) => handlePriorityChange(v as TaskPriority)}>
-                  <SelectTrigger className="h-7 text-xs bg-background">
-                    <SelectValue />
+                  <SelectTrigger className="h-8 text-xs font-medium bg-background w-full">
+                    <SelectValue>
+                      {priorityMap[task.priority] || 'Trung bình'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="URGENT">Khẩn cấp</SelectItem>
@@ -238,25 +248,41 @@ export function TaskDetailModal({
               </div>
 
               {/* Assignee */}
-              <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-muted-foreground">Người thực hiện</span>
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">Người thực hiện</span>
                 <Select
                   value={task.assigneeId || 'UNASSIGNED'}
                   onValueChange={(v) => handleAssigneeChange(v as string)}
                 >
-                  <SelectTrigger className="h-7 text-xs bg-background">
-                    <SelectValue />
+                  <SelectTrigger className="h-8 text-xs font-medium bg-background w-full">
+                    <SelectValue placeholder="Chưa giao">
+                      {selectedMember ? (
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Avatar className="size-4 shrink-0">
+                            <AvatarImage src={selectedMember.avatar || undefined} />
+                            <AvatarFallback className="text-[8px]">
+                              {selectedMember.fullname?.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate text-xs font-medium">{selectedMember.fullname}</span>
+                        </div>
+                      ) : (
+                        'Chưa giao'
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="UNASSIGNED">Chưa giao</SelectItem>
                     {members?.map((m) => (
                       <SelectItem key={m.id} value={m.id}>
-                        <div className="flex items-center gap-1.5">
-                          <Avatar className="size-3.5">
+                        <div className="flex items-center gap-2 max-w-full overflow-hidden py-0.5">
+                          <Avatar className="size-4 shrink-0 border border-border/60">
                             <AvatarImage src={m.avatar || undefined} />
-                            <AvatarFallback className="text-[7px]">{m.fullname?.slice(0, 2)}</AvatarFallback>
+                            <AvatarFallback className="text-[8px]">
+                              {m.fullname?.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
                           </Avatar>
-                          <span>{m.fullname}</span>
+                          <span className="truncate text-xs">{m.fullname} ({m.email})</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -265,13 +291,13 @@ export function TaskDetailModal({
               </div>
 
               {/* Due Date */}
-              <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-muted-foreground">Ngày hết hạn</span>
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">Hạn hoàn thành</span>
                 <Input
                   type="date"
                   value={formattedDueDateInput}
                   onChange={handleDueDateChange}
-                  className="h-7 text-xs bg-background"
+                  className="h-8 text-xs font-medium bg-background"
                 />
               </div>
             </div>
@@ -279,7 +305,7 @@ export function TaskDetailModal({
             {/* Description */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mô tả công việc</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mô tả công việc</span>
                 {!isEditingDesc && (
                   <Button
                     variant="ghost"
@@ -293,16 +319,16 @@ export function TaskDetailModal({
               </div>
 
               {isEditingDesc ? (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
-                    className="text-xs"
+                    className="text-sm p-3 bg-background"
                   />
                   <div className="flex items-center gap-2">
-                    <Button size="xs" onClick={handleDescSave} disabled={updateTask.isPending}>
-                      Lưu mô tả
+                    <Button size="xs" onClick={handleDescSave} disabled={updateTask.isPending} className="gap-1">
+                      <CheckIcon className="size-3.5" /> Lưu mô tả
                     </Button>
                     <Button
                       variant="outline"
@@ -311,18 +337,19 @@ export function TaskDetailModal({
                         setDescription(task.description || '');
                         setIsEditingDesc(false);
                       }}
+                      className="gap-1"
                     >
-                      Hủy
+                      <XIcon className="size-3.5" /> Hủy
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div
-                  className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs leading-relaxed min-h-15 cursor-pointer hover:border-border transition-colors whitespace-pre-wrap"
+                  className="p-3.5 rounded-xl bg-muted/20 border border-border/50 text-sm leading-relaxed min-h-16 cursor-pointer hover:border-border transition-colors whitespace-pre-wrap text-foreground/90"
                   onClick={() => setIsEditingDesc(true)}
                 >
                   {task.description || (
-                    <span className="text-muted-foreground italic">Chưa có mô tả. Bấm vào đây để thêm...</span>
+                    <span className="text-muted-foreground italic text-xs">Chưa có mô tả chi tiết. Bấm vào đây để thêm...</span>
                   )}
                 </div>
               )}

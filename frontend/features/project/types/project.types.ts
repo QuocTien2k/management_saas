@@ -19,6 +19,7 @@ export interface CreateProjectInput {
   key: string;
   description?: string;
   status?: ProjectStatus;
+  workspaceId?: string;
 }
 
 export interface UpdateProjectInput {

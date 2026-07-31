@@ -79,7 +79,10 @@ export function CreateProjectDialog({
 
   const onSubmit = async (data: CreateProjectFormValues) => {
     try {
-      await createProject.mutateAsync(data);
+      await createProject.mutateAsync({
+        ...data,
+        workspaceId,
+      });
       reset();
       onOpenChange(false);
     } catch (err: any) {
@@ -89,7 +92,7 @@ export function CreateProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
             <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">

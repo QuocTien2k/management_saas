@@ -14,8 +14,8 @@ export interface ApiResponse<T> {
 export const projectService = {
   // Lấy danh sách dự án trong workspace
   async getProjects(workspaceId?: string): Promise<Project[]> {
-    const headers = workspaceId ? { 'x-workspace-id': workspaceId } : {};
-    const response = await apiClient.get<ApiResponse<Project[]>>('/projects', { headers });
+    if (!workspaceId) return [];
+    const response = await apiClient.get<ApiResponse<Project[]>>(`/projects/workspace/${workspaceId}`);
     return response.data.data;
   },
 
@@ -27,8 +27,13 @@ export const projectService = {
 
   // Tạo dự án mới
   async createProject(data: CreateProjectInput, workspaceId?: string): Promise<Project> {
-    const headers = workspaceId ? { 'x-workspace-id': workspaceId } : {};
-    const response = await apiClient.post<ApiResponse<Project>>('/projects', data, { headers });
+    const targetWorkspaceId = data.workspaceId || workspaceId;
+    const payload = {
+      ...data,
+      workspaceId: targetWorkspaceId,
+    };
+    const headers = targetWorkspaceId ? { 'x-workspace-id': targetWorkspaceId } : {};
+    const response = await apiClient.post<ApiResponse<Project>>('/projects', payload, { headers });
     return response.data.data;
   },
 
