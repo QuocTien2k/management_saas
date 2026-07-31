@@ -10,6 +10,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { TaskModule } from './modules/task/task.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationModule } from './modules/notification/notification.module';
+import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     ProjectModule,
     TaskModule,
     NotificationModule,
+    ActivityLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

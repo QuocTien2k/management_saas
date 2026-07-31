@@ -143,6 +143,13 @@ export class TaskService {
       );
     }
 
+    // Phát event để ghi nhận Activity Log
+    this.eventEmitter.emit('task.created', {
+      task,
+      workspaceId: project.workspaceId,
+      userId,
+    });
+
     return task;
   }
 
@@ -301,11 +308,37 @@ export class TaskService {
       );
     }
 
+    // Tính toán các trường thay đổi để ghi log
+    const changes: any = {};
+    if (dto.title !== undefined && dto.title !== task.title) changes.title = { old: task.title, new: dto.title };
+    if (dto.description !== undefined && dto.description !== task.description) changes.description = { old: task.description, new: dto.description };
+    if (dto.priority !== undefined && dto.priority !== task.priority) changes.priority = { old: task.priority, new: dto.priority };
+    if (dto.status !== undefined && dto.status !== task.status) changes.status = { old: task.status, new: dto.status };
+    if (dto.dueDate !== undefined) {
+      const oldTime = task.dueDate ? new Date(task.dueDate).getTime() : null;
+      const newTime = dto.dueDate ? new Date(dto.dueDate).getTime() : null;
+      if (oldTime !== newTime) {
+        changes.dueDate = { old: task.dueDate, new: dto.dueDate ? new Date(dto.dueDate) : null };
+      }
+    }
+    if (dto.assigneeId !== undefined && dto.assigneeId !== task.assigneeId) {
+      changes.assigneeId = { old: task.assigneeId, new: dto.assigneeId || null };
+    }
+
+    if (Object.keys(changes).length > 0) {
+      this.eventEmitter.emit('task.updated', {
+        task: updatedTask,
+        workspaceId: project.workspaceId,
+        userId,
+        changes,
+      });
+    }
+
     return updatedTask;
   }
 
   async softDeleteTask(id: string, userId: string) {
-    const { task } = await this.checkTaskAccess(id, userId);
+    const { task, project } = await this.checkTaskAccess(id, userId);
 
     await this.prisma.task.update({
       where: { id },
@@ -317,11 +350,20 @@ export class TaskService {
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(task.projectId, 'task:deleted', { taskId: id });
 
+    // Phát event để ghi nhận Activity Log
+    this.eventEmitter.emit('task.deleted', {
+      taskId: id,
+      taskTitle: task.title,
+      projectId: task.projectId,
+      workspaceId: project.workspaceId,
+      userId,
+    });
+
     return { message: 'Đã xóa công việc thành công.' };
   }
 
   async moveTask(id: string, userId: string, dto: MoveTaskDto) {
-    const { task } = await this.checkTaskAccess(id, userId);
+    const { task, project } = await this.checkTaskAccess(id, userId);
 
     // Kiểm tra xem cột Kanban có tồn tại trong dự án không
     const column = await this.prisma.projectColumn.findFirst({
@@ -331,6 +373,11 @@ export class TaskService {
     if (!column) {
       throw new BadRequestException('Cột Kanban đích không thuộc về dự án này.');
     }
+
+    const [oldColumn, newColumn] = await Promise.all([
+      this.prisma.projectColumn.findUnique({ where: { id: task.columnId } }),
+      this.prisma.projectColumn.findUnique({ where: { id: dto.columnId } }),
+    ]);
 
     const movedTask = await this.prisma.task.update({
       where: { id },
@@ -343,6 +390,15 @@ export class TaskService {
 
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(movedTask.projectId, 'task:moved', movedTask);
+
+    // Phát event để ghi nhận Activity Log
+    this.eventEmitter.emit('task.moved', {
+      task: movedTask,
+      oldColumnName: oldColumn?.name || 'Không rõ',
+      newColumnName: newColumn?.name || 'Không rõ',
+      workspaceId: project.workspaceId,
+      userId,
+    });
 
     return movedTask;
   }
@@ -694,7 +750,7 @@ export class TaskService {
   // ==========================================
 
   async createComment(taskId: string, userId: string, dto: CreateCommentDto) {
-    const { task } = await this.checkTaskAccess(taskId, userId);
+    const { task, project } = await this.checkTaskAccess(taskId, userId);
 
     const comment = await this.prisma.comment.create({
       data: {
@@ -737,6 +793,16 @@ export class TaskService {
         ),
       );
     }
+
+    // Emit event để ghi nhận Activity Log
+    this.eventEmitter.emit('comment.created', {
+      comment,
+      taskId,
+      taskTitle: task.title,
+      projectId: task.projectId,
+      workspaceId: project.workspaceId,
+      userId,
+    });
 
     return comment;
   }
