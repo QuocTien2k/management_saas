@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useWorkspaceStore } from '@/features/workspace/store/workspace-store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
@@ -31,13 +32,19 @@ export const apiClient = axios.create({
   },
 });
 
-// Request Interceptor: Đính kèm Access Token vào Header
+// Request Interceptor: Đính kèm Access Token & Active Workspace ID vào Header
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const accessToken = useAuthStore.getState().accessToken;
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
+    const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+    if (activeWorkspaceId && config.headers) {
+      config.headers['x-workspace-id'] = activeWorkspaceId;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

@@ -110,16 +110,16 @@ export function MemberListTable({
               <TableCell className="font-medium">
                 <div className="flex items-center gap-3">
                   <Avatar className="size-9">
-                    {member.user.avatarUrl && (
-                      <AvatarImage src={member.user.avatarUrl} alt={member.user.fullName || member.user.email} />
+                    {member.user.avatar && (
+                      <AvatarImage src={member.user.avatar} alt={member.user.fullname || member.user.email} />
                     )}
                     <AvatarFallback>
-                      {(member.user.fullName || member.user.email).substring(0, 2).toUpperCase()}
+                      {(member.user.fullname || member.user.email).substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
                     <span className="font-semibold text-sm">
-                      {member.user.fullName || 'Người dùng'} {isSelf && '(Bạn)'}
+                      {member.user.fullname || 'Người dùng'} {isSelf && '(Bạn)'}
                     </span>
                     <span className="text-xs text-muted-foreground">{member.user.email}</span>
                   </div>

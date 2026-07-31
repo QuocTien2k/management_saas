@@ -23,8 +23,8 @@ export interface WorkspaceMember {
   user: {
     id: string;
     email: string;
-    fullName?: string | null;
-    avatarUrl?: string | null;
+    fullname?: string | null;
+    avatar?: string | null;
   };
 }
 

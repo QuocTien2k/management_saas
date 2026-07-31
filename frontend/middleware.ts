@@ -13,9 +13,9 @@ export function middleware(request: NextRequest) {
   const protectedRoutes = ['/dashboard', '/projects', '/workspaces', '/settings'];
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
-  // Nếu đã đăng nhập mà truy cập trang auth (login, signup...) -> chuyển hướng sang dashboard
+  // Nếu đã đăng nhập mà truy cập trang auth (login, signup...) -> chuyển hướng sang workspaces
   if (refreshToken && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/workspaces', request.url));
   }
 
   // Nếu chưa đăng nhập mà truy cập trang bảo vệ -> chuyển hướng sang login
@@ -26,9 +26,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Nếu truy cập root (/) và đã đăng nhập -> chuyển sang dashboard
+  // Nếu truy cập root (/) và đã đăng nhập -> chuyển sang workspaces
   if (pathname === '/' && refreshToken) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/workspaces', request.url));
   }
 
   return NextResponse.next();
