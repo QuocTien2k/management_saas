@@ -97,7 +97,7 @@ export default function WorkspaceLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          'border-r border-border/80 bg-card p-3 flex flex-col justify-between hidden md:flex transition-all duration-300 ease-in-out relative z-20 shadow-xs',
+          'hidden md:flex flex-col justify-between border-r border-border/80 bg-card p-3 transition-all duration-300 ease-in-out relative z-20 shadow-xs',
           isCollapsed ? 'w-20' : 'w-64'
         )}
       >
@@ -166,7 +166,7 @@ export default function WorkspaceLayout({
             <DropdownMenuTrigger
               render={
                 <button
-                  title={user?.fullname || user?.email}
+                  title={`${user?.fullname || 'Tài khoản'} (${user?.email || ''})`}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-xl p-2 text-left text-sm hover:bg-accent focus:outline-none transition-colors cursor-pointer',
                     isCollapsed && 'justify-center p-1'
@@ -179,20 +179,45 @@ export default function WorkspaceLayout({
                     </AvatarFallback>
                   </Avatar>
                   {!isCollapsed && (
-                    <div className="grid flex-1 text-left text-xs leading-tight overflow-hidden">
-                      <span className="truncate font-semibold text-foreground">
+                    <div className="grid flex-1 text-left text-xs leading-tight overflow-hidden min-w-0">
+                      <span className="truncate font-semibold text-foreground" title={user?.fullname || 'Tài khoản của tôi'}>
                         {user?.fullname || 'Tài khoản của tôi'}
                       </span>
-                      <span className="truncate text-muted-foreground text-[11px]">{user?.email}</span>
+                      <span className="truncate text-muted-foreground text-[11px]" title={user?.email}>
+                        {user?.email}
+                      </span>
                     </div>
                   )}
                 </button>
               }
             />
-            <DropdownMenuContent align={isCollapsed ? 'start' : 'end'} side={isCollapsed ? 'right' : 'top'} className="w-56">
-              <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive cursor-pointer">
+            <DropdownMenuContent align={isCollapsed ? 'start' : 'end'} side={isCollapsed ? 'right' : 'top'} className="w-64 p-2 shadow-lg border border-border/80 rounded-xl">
+              <div className="flex items-center gap-3 p-2 border-b border-border/60 pb-2.5 mb-1">
+                <Avatar className="size-10 shrink-0 border border-border/60 shadow-xs">
+                  {user?.avatar && <AvatarImage src={user.avatar} alt={user.email} />}
+                  <AvatarFallback className="text-sm font-semibold">
+                    {(user?.fullname || user?.email || 'U').substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="font-semibold text-sm text-foreground truncate" title={user?.fullname || 'Tài khoản của tôi'}>
+                    {user?.fullname || 'Tài khoản của tôi'}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate" title={user?.email}>
+                    {user?.email}
+                  </span>
+                  {user?.role && (
+                    <span className="text-[10px] font-semibold uppercase text-primary bg-primary/10 px-1.5 py-0.5 rounded w-fit mt-1">
+                      {user.role}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg p-2 cursor-pointer font-medium mt-1"
+              >
                 <LogOutIcon className="size-4 mr-2" />
                 Đăng xuất
               </DropdownMenuItem>
@@ -221,20 +246,46 @@ export default function WorkspaceLayout({
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <button className="flex items-center gap-2 rounded-full border border-border/80 p-1 hover:bg-accent transition-colors cursor-pointer">
-                    <Avatar className="size-7">
+                  <button
+                    title={`${user?.fullname || 'Tài khoản'} (${user?.email || ''})`}
+                    className="flex items-center gap-2 rounded-full border border-border/80 p-1 hover:bg-accent transition-colors cursor-pointer"
+                  >
+                    <Avatar className="size-7.5 border border-border/60">
                       {user?.avatar && <AvatarImage src={user.avatar} />}
-                      <AvatarFallback className="text-xs">
+                      <AvatarFallback className="text-xs font-semibold">
                         {(user?.fullname || user?.email || 'U').substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </button>
                 }
               />
-              <DropdownMenuContent align="end" className="backdrop-blur-md bg-popover/95 border border-border/80">
-                <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => logout()} className="text-destructive cursor-pointer">
+              <DropdownMenuContent align="end" className="w-64 p-2 shadow-lg border border-border/80 rounded-xl backdrop-blur-md bg-popover/95">
+                <div className="flex items-center gap-3 p-2 border-b border-border/60 pb-2.5 mb-1">
+                  <Avatar className="size-10 shrink-0 border border-border/60 shadow-xs">
+                    {user?.avatar && <AvatarImage src={user.avatar} alt={user.email} />}
+                    <AvatarFallback className="text-sm font-semibold">
+                      {(user?.fullname || user?.email || 'U').substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="font-semibold text-sm text-foreground truncate" title={user?.fullname || 'Tài khoản của tôi'}>
+                      {user?.fullname || 'Tài khoản của tôi'}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate" title={user?.email}>
+                      {user?.email}
+                    </span>
+                    {user?.role && (
+                      <span className="text-[10px] font-semibold uppercase text-primary bg-primary/10 px-1.5 py-0.5 rounded w-fit mt-1">
+                        {user.role}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <DropdownMenuItem
+                  onClick={() => logout()}
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg p-2 cursor-pointer font-medium mt-1"
+                >
                   <LogOutIcon className="size-4 mr-2" />
                   Đăng xuất
                 </DropdownMenuItem>
