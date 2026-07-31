@@ -13,12 +13,15 @@ import { MoveTaskDto } from './dto/move-task.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateLabelDto } from './dto/create-label.dto';
 import { WorkspaceRole, TaskStatus } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TaskAssignedEvent, TaskCommentEvent } from '../notification/events/notification.events';
 
 @Injectable()
 export class TaskService {
   constructor(
     private prisma: PrismaService,
     private taskGateway: TaskGateway,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // Helper để kiểm tra quyền truy cập của User vào Project
@@ -125,6 +128,20 @@ export class TaskService {
 
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(task.projectId, 'task:created', task);
+
+    // Phát sự kiện thông báo nếu có người thực hiện
+    if (task.assigneeId) {
+      this.eventEmitter.emit(
+        'task.assigned',
+        new TaskAssignedEvent(
+          task.assigneeId,
+          'Bạn đã được phân công công việc mới',
+          `Bạn đã được giao công việc "${task.title}" trong dự án "${project.name}".`,
+          `/project/${task.projectId}?taskId=${task.id}`,
+          project.id,
+        ),
+      );
+    }
 
     return task;
   }
@@ -269,6 +286,20 @@ export class TaskService {
 
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(updatedTask.projectId, 'task:updated', updatedTask);
+
+    // Phát sự kiện thông báo nếu đổi người thực hiện
+    if (dto.assigneeId && dto.assigneeId !== task.assigneeId) {
+      this.eventEmitter.emit(
+        'task.assigned',
+        new TaskAssignedEvent(
+          dto.assigneeId,
+          'Bạn đã được phân công công việc mới',
+          `Bạn đã được giao công việc "${updatedTask.title}" trong dự án "${project.name}".`,
+          `/project/${updatedTask.projectId}?taskId=${updatedTask.id}`,
+          project.id,
+        ),
+      );
+    }
 
     return updatedTask;
   }
@@ -678,6 +709,34 @@ export class TaskService {
 
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(task.projectId, 'comment:created', comment);
+
+    // Gửi thông báo cho assignee (nếu có và không phải người comment)
+    if (task.assigneeId && task.assigneeId !== userId) {
+      this.eventEmitter.emit(
+        'task.commented',
+        new TaskCommentEvent(
+          task.assigneeId,
+          'Có bình luận mới trong công việc',
+          `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
+          `/project/${task.projectId}?taskId=${task.id}`,
+          task.projectId,
+        ),
+      );
+    }
+
+    // Gửi thông báo cho reporter (nếu không phải người comment và khác assignee)
+    if (task.reporterId !== userId && task.reporterId !== task.assigneeId) {
+      this.eventEmitter.emit(
+        'task.commented',
+        new TaskCommentEvent(
+          task.reporterId,
+          'Có bình luận mới trong công việc',
+          `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
+          `/project/${task.projectId}?taskId=${task.id}`,
+          task.projectId,
+        ),
+      );
+    }
 
     return comment;
   }

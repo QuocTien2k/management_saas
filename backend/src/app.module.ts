@@ -8,18 +8,22 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { MemberModule } from './modules/member/member.module';
 import { ProjectModule } from './modules/project/project.module';
 import { TaskModule } from './modules/task/task.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     AuthModule,
     WorkspaceModule,
     MemberModule,
     ProjectModule,
     TaskModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

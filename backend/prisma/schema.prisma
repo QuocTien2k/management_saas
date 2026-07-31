@@ -44,18 +44,7 @@ enum NotificationType {
 // From Enum: subscription
 // ==========================================
 
-enum SubscriptionPlan {
-  FREE
-  PRO
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  ACTIVE // Đang hiệu lực
-  PAST_DUE // Nợ tiền / Thanh toán lỗi
-  CANCELED // Đã hủy
-  EXPIRED // Hết hạn
-}
+// Removed Subscription enums
 
 // ==========================================
 // From Enum: task
@@ -305,29 +294,7 @@ model RefreshToken {
 // From Model: subscription
 // ==========================================
 
-model Subscription {
-  id     String             @id @default(uuid())
-  plan   SubscriptionPlan   @default(FREE)
-  status SubscriptionStatus @default(ACTIVE)
-
-  // Liên kết cổng thanh toán (Stripe / PayOS / VNPay)
-  stripeCustomerId     String? @map("stripe_customer_id")
-  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
-
-  currentPeriodStart DateTime @map("current_period_start")
-  currentPeriodEnd   DateTime @map("current_period_end")
-  cancelAtPeriodEnd  Boolean  @default(false) @map("cancel_at_period_end")
-
-  // 1 Workspace có 1 Subscription hiện tại
-  workspaceId String    @unique @map("workspace_id")
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([workspaceId, status])
-  @@map("subscriptions")
-}
+// Removed Subscription model
 
 // ==========================================
 // From Model: task
@@ -468,7 +435,7 @@ model Workspace {
   invitations   WorkspaceInvitation[]
   projects      Project[]
   labels        TaskLabel[]
-  subscription  Subscription? // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
+  // subscription  Subscription?    // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
   notifications Notification[] // Quan hệ 1-N (Tùy chọn filter notification theo Workspace)
 
   @@index([slug])

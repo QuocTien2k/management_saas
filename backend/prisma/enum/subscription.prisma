@@ -1,12 +1,1 @@
-enum SubscriptionPlan {
-  FREE
-  PRO
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  ACTIVE    // Đang hiệu lực
-  PAST_DUE  // Nợ tiền / Thanh toán lỗi
-  CANCELED  // Đã hủy
-  EXPIRED   // Hết hạn
-}
+// Removed Subscription enums
