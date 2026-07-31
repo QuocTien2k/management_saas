@@ -1,0 +1,20 @@
+model Attachment {
+  id          String   @id @default(uuid())
+  fileName    String   @map("file_name")
+  fileSize    Int      @map("file_size")
+  mimeType    String   @map("mime_type")
+  storagePath String   @map("storage_path") // Đường dẫn file trên Supabase Bucket
+  publicUrl   String   @map("public_url")   // URL truy cập công khai
+
+  taskId      String   @map("task_id")
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  uploadedById String  @map("uploaded_by_id")
+  uploadedBy   User    @relation(name: "UserUploadedAttachments", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([taskId])
+  @@map("attachments")
+}

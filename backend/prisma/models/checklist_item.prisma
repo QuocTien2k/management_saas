@@ -1,0 +1,15 @@
+model ChecklistItem {
+  id          String    @id @default(uuid())
+  title       String    // Tên công việc con
+  isCompleted Boolean   @default(false) @map("is_completed")
+  position    Float     @default(65535.0)
+
+  checklistId String    @map("checklist_id")
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([checklistId])
+  @@map("checklist_items")
+}

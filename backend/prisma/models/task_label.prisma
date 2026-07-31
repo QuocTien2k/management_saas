@@ -1,0 +1,16 @@
+model TaskLabel {
+  id          String              @id @default(uuid())
+  name        String              // Tên nhãn (Ví dụ: "Bug", "Feature", "Refactor")
+  color       String              // Mã màu sắc hiển thị (Ví dụ: "#EF4444")
+  
+  workspaceId String              @map("workspace_id")
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  tasks       TaskLabelRelation[]
+
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, name])
+  @@map("task_labels")
+}

@@ -1,0 +1,18 @@
+model ProjectColumn {
+  id        String     @id @default(uuid())
+  name      String     // Tên cột (Ví dụ: "Cần làm", "Đang tiến hành", "Review", "Đã xong")
+  position  Float      @default(65535.0) // Thứ tự sắp xếp kéo thả các cột
+  status    TaskStatus @default(TODO)    // Ánh xạ trạng thái chuẩn phục vụ thống kê báo cáo
+
+  projectId String     @map("project_id")
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  tasks     Task[]
+
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@unique([projectId, name])
+  @@index([projectId, position])
+  @@map("project_columns")
+}

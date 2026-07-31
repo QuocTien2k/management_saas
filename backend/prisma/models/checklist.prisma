@@ -1,0 +1,16 @@
+model Checklist {
+  id        String          @id @default(uuid())
+  title     String          // Tên checklist (Ví dụ: "Tiêu chí nghiệm thu", "Các bước triển khai")
+  position  Float           @default(65535.0)
+
+  taskId    String          @map("task_id")
+  task      Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  items     ChecklistItem[]
+
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  @@index([taskId])
+  @@map("checklists")
+}
