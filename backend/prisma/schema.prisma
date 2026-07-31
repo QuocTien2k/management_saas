@@ -89,6 +89,43 @@ enum MemberStatus {
 }
 
 // ==========================================
+// From Model: activity_log
+// ==========================================
+
+model ActivityLog {
+  id         String @id @default(uuid())
+  action     String // Ví dụ: "TASK_CREATE", "TASK_UPDATE_STATUS", "TASK_MOVE", "COMMENT_CREATE"
+  entityType String // Ví dụ: "TASK", "PROJECT", "COMMENT", "MEMBER"
+  entityId   String // ID của thực thể được tác động
+  entityName String // Tên/Tiêu đề thực thể tại thời điểm tác động
+
+  // Chi tiết thay đổi (JSON lưu trạng thái cũ và mới)
+  details Json? @db.JsonB
+
+  // Người thực hiện hành động
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Tenant Isolation
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Optional contextual links
+  projectId String?  @map("project_id")
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  taskId String? @map("task_id")
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([workspaceId, createdAt])
+  @@index([projectId, createdAt])
+  @@index([taskId, createdAt])
+  @@map("activity_logs")
+}
+
+// ==========================================
 // From Model: attachment
 // ==========================================
 
@@ -240,8 +277,9 @@ model Project {
   updatedAt DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  tasks   Task[]
-  columns ProjectColumn[]
+  tasks        Task[]
+  columns      ProjectColumn[]
+  activityLogs ActivityLog[]
 
   // Key của dự án không được trùng trong cùng 1 Workspace
   @@unique([workspaceId, key])
@@ -327,10 +365,11 @@ model Task {
   updatedAt DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  comments    Comment[]
-  attachments Attachment[]
-  checklists  Checklist[]
-  labels      TaskLabelRelation[]
+  comments     Comment[]
+  attachments  Attachment[]
+  checklists   Checklist[]
+  labels       TaskLabelRelation[]
+  activityLogs ActivityLog[]
 
   @@index([projectId, status])
   @@index([columnId])
@@ -408,6 +447,7 @@ model User {
   uploadedAttachments Attachment[] @relation("UserUploadedAttachments")
 
   notifications Notification[]
+  activityLogs  ActivityLog[]
 
   @@index([status, role])
   @@index([createdAt])
@@ -437,6 +477,7 @@ model Workspace {
   labels        TaskLabel[]
   // subscription  Subscription?    // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
   notifications Notification[] // Quan hệ 1-N (Tùy chọn filter notification theo Workspace)
+  activityLogs  ActivityLog[]
 
   @@index([slug])
   @@index([createdAt])

@@ -16,6 +16,7 @@ model Project {
   // Relations
   tasks       Task[]
   columns     ProjectColumn[]
+  activityLogs ActivityLog[]
 
   // Key của dự án không được trùng trong cùng 1 Workspace
   @@unique([workspaceId, key])

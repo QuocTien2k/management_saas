@@ -29,6 +29,7 @@ model Task {
   attachments Attachment[]
   checklists  Checklist[]
   labels      TaskLabelRelation[]
+  activityLogs ActivityLog[]
 
   @@index([projectId, status])
   @@index([columnId])

@@ -27,6 +27,7 @@ model User {
   uploadedAttachments  Attachment[]          @relation("UserUploadedAttachments")
 
   notifications        Notification[]
+  activityLogs        ActivityLog[]
 
   @@index([status, role])
   @@index([createdAt])
