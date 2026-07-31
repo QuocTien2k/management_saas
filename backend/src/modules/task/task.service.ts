@@ -70,7 +70,7 @@ export class TaskService {
   // ==========================================
 
   async createTask(userId: string, dto: CreateTaskDto) {
-    await this.checkProjectAccess(dto.projectId, userId);
+    const { project } = await this.checkProjectAccess(dto.projectId, userId);
 
     // Kiểm tra xem column có thuộc về Project không
     const column = await this.prisma.projectColumn.findFirst({
@@ -83,7 +83,6 @@ export class TaskService {
 
     // Nếu có gán người thực hiện, kiểm tra xem người đó có thuộc Workspace không
     if (dto.assigneeId) {
-      const project = await this.prisma.project.findUnique({ where: { id: dto.projectId } });
       const assigneeMember = await this.prisma.workspaceMember.findUnique({
         where: {
           workspaceId_userId: {
@@ -231,7 +230,7 @@ export class TaskService {
   }
 
   async updateTask(id: string, userId: string, dto: UpdateTaskDto) {
-    const { task } = await this.checkTaskAccess(id, userId);
+    const { task, project } = await this.checkTaskAccess(id, userId);
 
     const data: any = {};
 
@@ -246,7 +245,7 @@ export class TaskService {
         const assigneeMember = await this.prisma.workspaceMember.findUnique({
           where: {
             workspaceId_userId: {
-              workspaceId: task.project.workspaceId,
+              workspaceId: project.workspaceId,
               userId: dto.assigneeId,
             },
           },
