@@ -46,6 +46,7 @@ export default function ProjectBoardPage() {
     return members.map((m) => ({
       id: m.user.id,
       fullname: m.user.fullname,
+      email: m.user.email,
       avatar: m.user.avatar,
     }));
   }, [members]);

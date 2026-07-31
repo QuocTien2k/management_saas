@@ -126,9 +126,9 @@ export default function WorkspaceDashboardPage() {
               <Button size="xs" variant="ghost" className="text-xs">Xem tất cả</Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-5 pt-1">
             {projects && projects.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {projects.slice(0, 4).map((proj) => (
                   <ProjectCard key={proj.id} project={proj} workspaceId={workspaceId} />
                 ))}
@@ -157,7 +157,7 @@ export default function WorkspaceDashboardPage() {
               <Button size="xs" variant="ghost" className="text-xs">Xem tất cả</Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-5 pt-1">
             <div className="space-y-3">
               {members?.slice(0, 5).map((m) => (
                 <div key={m.id} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-muted/40 transition-colors">
