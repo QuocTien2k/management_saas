@@ -1,0 +1,6 @@
+enum NotificationType {
+  TASK_ASSIGNED     // Được giao task
+  TASK_COMMENT      // Có bình luận mới trong task
+  MEMBER_INVITED    // Được mời vào Workspace
+  SYSTEM_ALERT      // Thông báo hệ thống
+}

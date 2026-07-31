@@ -26,8 +26,7 @@ model User {
   comments             Comment[]
   uploadedAttachments  Attachment[]          @relation("UserUploadedAttachments")
 
-  // Note: uncomment các dòng dưới đây khi tạo các nhóm model tiếp theo
-  // notifications        Notification[]
+  notifications        Notification[]
 
   @@index([status, role])
   @@index([createdAt])

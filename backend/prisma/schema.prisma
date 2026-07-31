@@ -30,6 +30,34 @@ enum UserStatus {
 }
 
 // ==========================================
+// From Enum: notification
+// ==========================================
+
+enum NotificationType {
+  TASK_ASSIGNED // Được giao task
+  TASK_COMMENT // Có bình luận mới trong task
+  MEMBER_INVITED // Được mời vào Workspace
+  SYSTEM_ALERT // Thông báo hệ thống
+}
+
+// ==========================================
+// From Enum: subscription
+// ==========================================
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE // Đang hiệu lực
+  PAST_DUE // Nợ tiền / Thanh toán lỗi
+  CANCELED // Đã hủy
+  EXPIRED // Hết hạn
+}
+
+// ==========================================
 // From Enum: task
 // ==========================================
 
@@ -69,312 +97,6 @@ enum MemberStatus {
   INVITED // Đã gửi lời mời qua email, chưa chấp nhận
   ACTIVE // Đã tham gia và đang hoạt động
   SUSPENDED // Bị khóa tạm thời trong workspace này
-}
-
-// ==========================================
-// From Model: comment
-// ==========================================
-
-model Comment {
-  id      String @id @default(uuid())
-  content String @db.Text
-
-  taskId String @map("task_id")
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([taskId])
-  @@map("comments")
-}
-
-// ==========================================
-// From Model: password_reset_token
-// ==========================================
-
-model PasswordResetToken {
-  id        String @id @default(uuid())
-  tokenHash String @unique @map("token_hash")
-  userId    String @map("user_id")
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  isUsed    Boolean  @default(false) @map("is_used")
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([userId])
-  @@map("password_reset_tokens")
-}
-
-// ==========================================
-// From Model: project
-// ==========================================
-
-model Project {
-  id          String        @id @default(uuid())
-  name        String
-  key         String // Mã viết tắt dự án (ví dụ: "SAAS", "MOB")
-  description String?       @db.Text
-  status      ProjectStatus @default(IN_PROGRESS)
-
-  workspaceId String    @map("workspace_id")
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  // Soft delete & Audit
-  deletedAt DateTime? @map("deleted_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  tasks   Task[]
-  columns ProjectColumn[]
-
-  // Key của dự án không được trùng trong cùng 1 Workspace
-  @@unique([workspaceId, key])
-  @@index([workspaceId, status])
-  @@map("projects")
-}
-
-// ==========================================
-// From Model: refresh_token
-// ==========================================
-
-model RefreshToken {
-  id        String @id @default(uuid())
-  tokenHash String @unique @map("token_hash")
-  userId    String @map("user_id")
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  isRevoked Boolean  @default(false) @map("is_revoked")
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([userId])
-  @@map("refresh_tokens")
-}
-
-// ==========================================
-// From Model: task
-// ==========================================
-
-model Task {
-  id          String       @id @default(uuid())
-  title       String
-  description String?      @db.Text
-  status      TaskStatus   @default(TODO)
-  priority    TaskPriority @default(MEDIUM)
-  dueDate     DateTime?    @map("due_date")
-  position    Float        @default(65535.0) // Thứ tự sắp xếp kéo/thả Kanban
-
-  projectId String  @map("project_id")
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  columnId String        @map("column_id")
-  column   ProjectColumn @relation(fields: [columnId], references: [id], onDelete: Restrict)
-
-  assigneeId String? @map("assignee_id")
-  assignee   User?   @relation(name: "TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-
-  reporterId String @map("reporter_id")
-  reporter   User   @relation(name: "TaskReporter", fields: [reporterId], references: [id], onDelete: Cascade)
-
-  // Soft delete & Audit
-  deletedAt DateTime? @map("deleted_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  comments    Comment[]
-  attachments Attachment[]
-  checklists  Checklist[]
-  labels      TaskLabelRelation[]
-
-  @@index([projectId, status])
-  @@index([columnId])
-  @@index([assigneeId])
-  @@index([position])
-  @@map("tasks")
-}
-
-// ==========================================
-// From Model: user
-// ==========================================
-
-model User {
-  id       String       @id @default(uuid())
-  email    String       @unique
-  fullname String
-  password String? // Nullable nếu đăng ký bằng Google
-  avatar   String?
-  provider AuthProvider @default(LOCAL)
-  googleId String?      @unique
-  phone    String?      @unique
-  role     Role         @default(USER)
-  status   UserStatus   @default(PENDING)
-
-  // Soft delete & Audit
-  deletedAt DateTime? @map("deleted_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  // Relations (Module Auth & Workspace)
-  refreshTokens        RefreshToken[]
-  passwordResetTokens  PasswordResetToken[]
-  workspaceMemberships WorkspaceMember[]
-  sentInvitations      WorkspaceInvitation[] @relation("SentInvitations")
-
-  assignedTasks       Task[]       @relation("TaskAssignee")
-  reportedTasks       Task[]       @relation("TaskReporter")
-  comments            Comment[]
-  uploadedAttachments Attachment[] @relation("UserUploadedAttachments")
-
-  // Note: uncomment các dòng dưới đây khi tạo các nhóm model tiếp theo
-  // notifications        Notification[]
-
-  @@index([status, role])
-  @@index([createdAt])
-  @@map("users")
-}
-
-// ==========================================
-// From Model: workspace
-// ==========================================
-
-model Workspace {
-  id          String  @id @default(uuid())
-  name        String // Tên không gian làm việc (ví dụ: "Acme Corp")
-  slug        String  @unique // URL-friendly string (ví dụ: "acme-corp")
-  logo        String? // URL logo của Workspace
-  description String? @db.Text
-
-  // Soft delete & Audit
-  deletedAt DateTime? @map("deleted_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  members     WorkspaceMember[]
-  invitations WorkspaceInvitation[]
-  projects    Project[]
-  labels      TaskLabel[]
-  // subscription  Subscription?    // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
-  // notifications Notification[]   // Quan hệ 1-N (Tùy chọn filter notification theo Workspace)
-
-  @@index([slug])
-  @@index([createdAt])
-  @@map("workspaces")
-}
-
-// ==========================================
-// From Model: workspace_invitation
-// ==========================================
-
-model WorkspaceInvitation {
-  id          String        @id @default(uuid())
-  email       String
-  workspaceId String        @map("workspace_id")
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  role        WorkspaceRole @default(MEMBER)
-  token       String        @unique
-  invitedById String        @map("invited_by_id")
-  invitedBy   User          @relation(name: "SentInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
-  expiresAt   DateTime      @map("expires_at")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-
-  @@unique([workspaceId, email])
-  @@index([token])
-  @@map("workspace_invitations")
-}
-
-// ==========================================
-// From Model: workspace_member
-// ==========================================
-
-model WorkspaceMember {
-  id String @id @default(uuid())
-
-  workspaceId String    @map("workspace_id")
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  role   WorkspaceRole @default(MEMBER)
-  status MemberStatus  @default(ACTIVE)
-
-  joinedAt  DateTime? @map("joined_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  // Đảm bảo 1 user không thể xuất hiện 2 lần trong cùng 1 workspace
-  @@unique([workspaceId, userId])
-  @@index([workspaceId, role])
-  @@index([userId])
-  @@map("workspace_members")
-}
-
-// ==========================================
-// From Model: project_column
-// ==========================================
-
-model ProjectColumn {
-  id       String     @id @default(uuid())
-  name     String // Tên cột (Ví dụ: "Cần làm", "Đang tiến hành", "Review", "Đã xong")
-  position Float      @default(65535.0) // Thứ tự sắp xếp kéo thả các cột
-  status   TaskStatus @default(TODO) // Ánh xạ trạng thái chuẩn phục vụ thống kê báo cáo
-
-  projectId String  @map("project_id")
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  tasks Task[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@unique([projectId, name])
-  @@index([projectId, position])
-  @@map("project_columns")
-}
-
-// ==========================================
-// From Model: task_label
-// ==========================================
-
-model TaskLabel {
-  id    String @id @default(uuid())
-  name  String // Tên nhãn (Ví dụ: "Bug", "Feature", "Refactor")
-  color String // Mã màu sắc hiển thị (Ví dụ: "#EF4444")
-
-  workspaceId String    @map("workspace_id")
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  tasks TaskLabelRelation[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@unique([workspaceId, name])
-  @@map("task_labels")
-}
-
-// ==========================================
-// From Model: task_label_relation
-// ==========================================
-
-model TaskLabelRelation {
-  taskId String @map("task_id")
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  labelId String    @map("label_id")
-  label   TaskLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
-
-  @@id([taskId, labelId])
-  @@map("task_label_relations")
 }
 
 // ==========================================
@@ -441,4 +163,364 @@ model ChecklistItem {
 
   @@index([checklistId])
   @@map("checklist_items")
+}
+
+// ==========================================
+// From Model: comment
+// ==========================================
+
+model Comment {
+  id      String @id @default(uuid())
+  content String @db.Text
+
+  taskId String @map("task_id")
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([taskId])
+  @@map("comments")
+}
+
+// ==========================================
+// From Model: notification
+// ==========================================
+
+model Notification {
+  id      String           @id @default(uuid())
+  title   String
+  message String           @db.Text
+  type    NotificationType
+  isRead  Boolean          @default(false) @map("is_read")
+  link    String? // URL hoặc route để điều hướng khi click (ví dụ: "/w/slug/p/key/task-1")
+
+  // Người nhận thông báo
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // (Optional) Gắn với Workspace để filter theo context
+  workspaceId String?    @map("workspace_id")
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ==========================================
+// From Model: password_reset_token
+// ==========================================
+
+model PasswordResetToken {
+  id        String @id @default(uuid())
+  tokenHash String @unique @map("token_hash")
+  userId    String @map("user_id")
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isUsed    Boolean  @default(false) @map("is_used")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// ==========================================
+// From Model: project
+// ==========================================
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  key         String // Mã viết tắt dự án (ví dụ: "SAAS", "MOB")
+  description String?       @db.Text
+  status      ProjectStatus @default(IN_PROGRESS)
+
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Soft delete & Audit
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tasks   Task[]
+  columns ProjectColumn[]
+
+  // Key của dự án không được trùng trong cùng 1 Workspace
+  @@unique([workspaceId, key])
+  @@index([workspaceId, status])
+  @@map("projects")
+}
+
+// ==========================================
+// From Model: project_column
+// ==========================================
+
+model ProjectColumn {
+  id       String     @id @default(uuid())
+  name     String // Tên cột (Ví dụ: "Cần làm", "Đang tiến hành", "Review", "Đã xong")
+  position Float      @default(65535.0) // Thứ tự sắp xếp kéo thả các cột
+  status   TaskStatus @default(TODO) // Ánh xạ trạng thái chuẩn phục vụ thống kê báo cáo
+
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  tasks Task[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([projectId, name])
+  @@index([projectId, position])
+  @@map("project_columns")
+}
+
+// ==========================================
+// From Model: refresh_token
+// ==========================================
+
+model RefreshToken {
+  id        String @id @default(uuid())
+  tokenHash String @unique @map("token_hash")
+  userId    String @map("user_id")
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ==========================================
+// From Model: subscription
+// ==========================================
+
+model Subscription {
+  id     String             @id @default(uuid())
+  plan   SubscriptionPlan   @default(FREE)
+  status SubscriptionStatus @default(ACTIVE)
+
+  // Liên kết cổng thanh toán (Stripe / PayOS / VNPay)
+  stripeCustomerId     String? @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+
+  currentPeriodStart DateTime @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+  cancelAtPeriodEnd  Boolean  @default(false) @map("cancel_at_period_end")
+
+  // 1 Workspace có 1 Subscription hiện tại
+  workspaceId String    @unique @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([workspaceId, status])
+  @@map("subscriptions")
+}
+
+// ==========================================
+// From Model: task
+// ==========================================
+
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String?      @db.Text
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?    @map("due_date")
+  position    Float        @default(65535.0) // Thứ tự sắp xếp kéo/thả Kanban
+
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  columnId String        @map("column_id")
+  column   ProjectColumn @relation(fields: [columnId], references: [id], onDelete: Restrict)
+
+  assigneeId String? @map("assignee_id")
+  assignee   User?   @relation(name: "TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  reporterId String @map("reporter_id")
+  reporter   User   @relation(name: "TaskReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  // Soft delete & Audit
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  comments    Comment[]
+  attachments Attachment[]
+  checklists  Checklist[]
+  labels      TaskLabelRelation[]
+
+  @@index([projectId, status])
+  @@index([columnId])
+  @@index([assigneeId])
+  @@index([position])
+  @@map("tasks")
+}
+
+// ==========================================
+// From Model: task_label
+// ==========================================
+
+model TaskLabel {
+  id    String @id @default(uuid())
+  name  String // Tên nhãn (Ví dụ: "Bug", "Feature", "Refactor")
+  color String // Mã màu sắc hiển thị (Ví dụ: "#EF4444")
+
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  tasks TaskLabelRelation[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, name])
+  @@map("task_labels")
+}
+
+// ==========================================
+// From Model: task_label_relation
+// ==========================================
+
+model TaskLabelRelation {
+  taskId String @map("task_id")
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  labelId String    @map("label_id")
+  label   TaskLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+  @@map("task_label_relations")
+}
+
+// ==========================================
+// From Model: user
+// ==========================================
+
+model User {
+  id       String       @id @default(uuid())
+  email    String       @unique
+  fullname String
+  password String? // Nullable nếu đăng ký bằng Google
+  avatar   String?
+  provider AuthProvider @default(LOCAL)
+  googleId String?      @unique
+  phone    String?      @unique
+  role     Role         @default(USER)
+  status   UserStatus   @default(PENDING)
+
+  // Soft delete & Audit
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations (Module Auth & Workspace)
+  refreshTokens        RefreshToken[]
+  passwordResetTokens  PasswordResetToken[]
+  workspaceMemberships WorkspaceMember[]
+  sentInvitations      WorkspaceInvitation[] @relation("SentInvitations")
+
+  assignedTasks       Task[]       @relation("TaskAssignee")
+  reportedTasks       Task[]       @relation("TaskReporter")
+  comments            Comment[]
+  uploadedAttachments Attachment[] @relation("UserUploadedAttachments")
+
+  notifications Notification[]
+
+  @@index([status, role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// ==========================================
+// From Model: workspace
+// ==========================================
+
+model Workspace {
+  id          String  @id @default(uuid())
+  name        String // Tên không gian làm việc (ví dụ: "Acme Corp")
+  slug        String  @unique // URL-friendly string (ví dụ: "acme-corp")
+  logo        String? // URL logo của Workspace
+  description String? @db.Text
+
+  // Soft delete & Audit
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  members       WorkspaceMember[]
+  invitations   WorkspaceInvitation[]
+  projects      Project[]
+  labels        TaskLabel[]
+  subscription  Subscription? // Quan hệ 1-1 (1 Workspace có tối đa 1 Subscription)
+  notifications Notification[] // Quan hệ 1-N (Tùy chọn filter notification theo Workspace)
+
+  @@index([slug])
+  @@index([createdAt])
+  @@map("workspaces")
+}
+
+// ==========================================
+// From Model: workspace_invitation
+// ==========================================
+
+model WorkspaceInvitation {
+  id          String        @id @default(uuid())
+  email       String
+  workspaceId String        @map("workspace_id")
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole @default(MEMBER)
+  token       String        @unique
+  invitedById String        @map("invited_by_id")
+  invitedBy   User          @relation(name: "SentInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt   DateTime      @map("expires_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, email])
+  @@index([token])
+  @@map("workspace_invitations")
+}
+
+// ==========================================
+// From Model: workspace_member
+// ==========================================
+
+model WorkspaceMember {
+  id String @id @default(uuid())
+
+  workspaceId String    @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role   WorkspaceRole @default(MEMBER)
+  status MemberStatus  @default(ACTIVE)
+
+  joinedAt  DateTime? @map("joined_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Đảm bảo 1 user không thể xuất hiện 2 lần trong cùng 1 workspace
+  @@unique([workspaceId, userId])
+  @@index([workspaceId, role])
+  @@index([userId])
+  @@map("workspace_members")
 }
