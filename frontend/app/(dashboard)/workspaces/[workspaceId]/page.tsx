@@ -29,26 +29,26 @@ export default function WorkspaceDashboardPage() {
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header Info */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border pb-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/70 pb-5">
         <div className="flex items-center gap-4">
-          {workspace && <WorkspaceAvatar name={workspace.name} logoUrl={workspace.logoUrl} size="lg" />}
+          {workspace && <WorkspaceAvatar name={workspace.name} logo={workspace.logo} logoUrl={workspace.logoUrl} size="lg" />}
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">{workspace?.name || 'Workspace'}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">{workspace?.name || 'Workspace'}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {workspace?.description || 'Tổng quan công việc và dự án trong nhóm của bạn.'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button onClick={() => setInviteDialogOpen(true)} variant="outline" className="gap-2">
-            <UserPlusIcon className="size-4" />
+        <div className="flex items-center gap-2.5">
+          <Button onClick={() => setInviteDialogOpen(true)} variant="outline" size="sm" className="gap-2 shadow-xs cursor-pointer">
+            <UserPlusIcon className="size-4 text-muted-foreground" />
             Mời thành viên
           </Button>
           <Link href={`/workspaces/${workspaceId}/projects`}>
-            <Button className="gap-2">
+            <Button size="sm" className="gap-2 shadow-xs cursor-pointer">
               <PlusIcon className="size-4" />
               Tạo Dự án mới
             </Button>
@@ -58,98 +58,106 @@ export default function WorkspaceDashboardPage() {
 
       {/* Metrics Cards Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="shadow-xs border-border/80 hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng Dự án</CardTitle>
-            <FolderKanbanIcon className="size-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tổng Dự án</CardTitle>
+            <div className="flex size-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <FolderKanbanIcon className="size-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{workspace?._count?.projects || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">Dự án đang hoạt động</p>
+            <div className="text-2xl font-bold tracking-tight">{workspace?._count?.projects || 0}</div>
+            <p className="text-[11px] text-muted-foreground mt-1">Dự án đang hoạt động</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-xs border-border/80 hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium font-heading">Thành viên</CardTitle>
-            <UsersIcon className="size-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Thành viên</CardTitle>
+            <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+              <UsersIcon className="size-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{members?.length || workspace?._count?.members || 1}</div>
-            <p className="text-xs text-muted-foreground mt-1">Thành viên tham gia</p>
+            <div className="text-2xl font-bold tracking-tight">{members?.length || workspace?._count?.members || 1}</div>
+            <p className="text-[11px] text-muted-foreground mt-1">Thành viên tham gia</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-xs border-border/80 hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Công việc hoàn thành</CardTitle>
-            <CheckCircle2Icon className="size-4 text-emerald-500" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Công việc xong</CardTitle>
+            <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2Icon className="size-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Trong tuần này</p>
+            <div className="text-2xl font-bold tracking-tight">0</div>
+            <p className="text-[11px] text-muted-foreground mt-1">Trong tuần này</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-xs border-border/80 hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Việc sắp hết hạn</CardTitle>
-            <ClockIcon className="size-4 text-amber-500" />
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Việc hết hạn</CardTitle>
+            <div className="flex size-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <ClockIcon className="size-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Cần hoàn thành sớm</p>
+            <div className="text-2xl font-bold tracking-tight">0</div>
+            <p className="text-[11px] text-muted-foreground mt-1">Cần xử lý gấp</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Member summary & Recent Activity preview */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Dự án gần đây</CardTitle>
-            <CardDescription>Các dự án mới nhất trong Workspace này.</CardDescription>
+        <Card className="lg:col-span-2 shadow-xs border-border/80">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">Dự án gần đây</CardTitle>
+            <CardDescription className="text-xs">Các dự án mới nhất trong Workspace này.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
-              <FolderKanbanIcon className="size-10 stroke-1 mb-2 opacity-50" />
-              <p className="text-sm font-medium">Chưa có dự án nào được tạo.</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border border-dashed border-border/70 rounded-xl bg-muted/20">
+              <FolderKanbanIcon className="size-9 stroke-1.5 mb-2.5 opacity-40 text-primary" />
+              <p className="text-xs font-medium">Chưa có dự án nào được tạo.</p>
               <Link href={`/workspaces/${workspaceId}/projects`} className="mt-3">
-                <Button size="sm" variant="outline" className="gap-1.5">
-                  <PlusIcon className="size-4" /> Tạo dự án đầu tiên
+                <Button size="xs" variant="outline" className="gap-1.5 shadow-xs">
+                  <PlusIcon className="size-3.5" /> Tạo dự án đầu tiên
                 </Button>
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="shadow-xs border-border/80">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
-              <CardTitle>Thành viên nhóm</CardTitle>
-              <CardDescription>{members?.length || 1} thành viên</CardDescription>
+              <CardTitle className="text-base font-semibold">Thành viên nhóm</CardTitle>
+              <CardDescription className="text-xs">{members?.length || 1} thành viên</CardDescription>
             </div>
             <Link href={`/workspaces/${workspaceId}/members`}>
-              <Button size="xs" variant="ghost">Xem tất cả</Button>
+              <Button size="xs" variant="ghost" className="text-xs">Xem tất cả</Button>
             </Link>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {members?.slice(0, 5).map((m) => (
-                <div key={m.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-8">
+                <div key={m.id} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-muted/40 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar className="size-7.5 border border-border/60">
                       {m.user.avatar && <AvatarImage src={m.user.avatar} />}
-                      <AvatarFallback>
+                      <AvatarFallback className="text-[11px]">
                         {(m.user.fullname || m.user.email).substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="text-xs font-semibold">{m.user.fullname || 'Thành viên'}</span>
-                      <span className="text-[11px] text-muted-foreground">{m.user.email}</span>
+                      <span className="text-xs font-medium text-foreground">{m.user.fullname || 'Thành viên'}</span>
+                      <span className="text-[10px] text-muted-foreground">{m.user.email}</span>
                     </div>
                   </div>
-                  <span className="text-[11px] font-medium uppercase text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-semibold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md">
                     {m.role}
                   </span>
                 </div>

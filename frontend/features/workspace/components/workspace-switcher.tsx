@@ -22,7 +22,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export function WorkspaceSwitcher() {
+interface WorkspaceSwitcherProps {
+  isCollapsed?: boolean;
+}
+
+export function WorkspaceSwitcher({ isCollapsed = false }: WorkspaceSwitcherProps) {
   const router = useRouter();
   const params = useParams();
   const workspaceIdFromUrl = params?.workspaceId as string | undefined;
@@ -53,30 +57,43 @@ export function WorkspaceSwitcher() {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <button className="flex w-full items-center justify-between gap-2.5 rounded-xl border border-border bg-background p-2.5 text-left text-sm font-medium shadow-xs transition-all hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/50 dark:bg-card">
-              <div className="flex items-center gap-2.5 overflow-hidden">
+            isCollapsed ? (
+              <button
+                title={currentWorkspace?.name || 'Workspace'}
+                className="flex size-10 mx-auto items-center justify-center rounded-xl border border-border bg-background p-1 text-center shadow-xs transition-all hover:bg-accent focus:outline-none dark:bg-card cursor-pointer"
+              >
                 {currentWorkspace ? (
                   <WorkspaceAvatar name={currentWorkspace.name} logo={currentWorkspace.logo || currentWorkspace.logoUrl} size="sm" />
                 ) : (
-                  <div className="flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <Building2Icon className="size-4" />
-                  </div>
+                  <Building2Icon className="size-4 text-primary" />
                 )}
-                <div className="grid flex-1 text-left text-xs leading-tight">
-                  <span className="truncate font-semibold text-sm text-foreground">
-                    {isLoading ? 'Đang tải...' : currentWorkspace?.name || 'Chọn Workspace'}
-                  </span>
-                  <span className="truncate text-muted-foreground">
-                    {currentWorkspace?._count?.members || 1} thành viên
-                  </span>
+              </button>
+            ) : (
+              <button className="flex w-full items-center justify-between gap-2.5 rounded-xl border border-border bg-background p-2 text-left text-sm font-medium shadow-xs transition-all hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/50 dark:bg-card cursor-pointer">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  {currentWorkspace ? (
+                    <WorkspaceAvatar name={currentWorkspace.name} logo={currentWorkspace.logo || currentWorkspace.logoUrl} size="sm" />
+                  ) : (
+                    <div className="flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <Building2Icon className="size-4" />
+                    </div>
+                  )}
+                  <div className="grid flex-1 text-left text-xs leading-tight">
+                    <span className="truncate font-semibold text-sm text-foreground">
+                      {isLoading ? 'Đang tải...' : currentWorkspace?.name || 'Chọn Workspace'}
+                    </span>
+                    <span className="truncate text-muted-foreground text-[11px]">
+                      {currentWorkspace?._count?.members || 1} thành viên
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
-            </button>
+                <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
+              </button>
+            )
           }
         />
 
-        <DropdownMenuContent className="w-64" align="start">
+        <DropdownMenuContent className="w-64" align={isCollapsed ? "start" : "start"} side={isCollapsed ? "right" : "bottom"}>
           <DropdownMenuLabel>Danh sách Workspace</DropdownMenuLabel>
           <div className="max-h-60 overflow-y-auto space-y-0.5">
             {workspaces?.map((ws) => {

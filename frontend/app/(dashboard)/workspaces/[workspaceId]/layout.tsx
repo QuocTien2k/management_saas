@@ -10,13 +10,15 @@ import {
   SettingsIcon,
   LogOutIcon,
   BellIcon,
-  UserIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
 } from 'lucide-react';
 
 import { useWorkspaceDetail } from '@/features/workspace/hooks/use-workspace';
 import { useWorkspaceStore } from '@/features/workspace/store/workspace-store';
 import { WorkspaceSwitcher } from '@/features/workspace/components/workspace-switcher';
 import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useLogout } from '@/features/auth/hooks/use-logout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
@@ -38,9 +40,27 @@ export default function WorkspaceLayout({
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
 
-  const { user, clearAuth } = useAuthStore();
+  const { user } = useAuthStore();
+  const { logout } = useLogout();
   const { data: workspace } = useWorkspaceDetail(workspaceId);
   const setActiveWorkspace = useWorkspaceStore((s) => s.setActiveWorkspace);
+
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('workspace-sidebar-collapsed');
+    if (saved !== null) {
+      setIsCollapsed(saved === 'true');
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('workspace-sidebar-collapsed', String(next));
+      return next;
+    });
+  };
 
   React.useEffect(() => {
     if (workspace) {
@@ -73,20 +93,44 @@ export default function WorkspaceLayout({
   ];
 
   return (
-    <div className="flex min-h-screen bg-muted/20">
+    <div className="flex min-h-screen bg-slate-50/70 dark:bg-slate-950/70 text-foreground transition-colors duration-200">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-background p-4 flex flex-col justify-between hidden md:flex dark:bg-card">
-        <div className="space-y-6">
-          {/* Top Logo / App name */}
-          <div className="flex items-center gap-2 px-1">
-            <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm">
-              M
+      <aside
+        className={cn(
+          'border-r border-border/80 bg-card p-3 flex flex-col justify-between hidden md:flex transition-all duration-300 ease-in-out relative z-20 shadow-xs',
+          isCollapsed ? 'w-20' : 'w-64'
+        )}
+      >
+        <div className="space-y-5">
+          {/* Top Header Logo & Toggle Button */}
+          <div className={cn('flex items-center justify-between px-1', isCollapsed && 'flex-col gap-3')}>
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-xs">
+                M
+              </div>
+              {!isCollapsed && (
+                <span className="font-bold text-base tracking-tight truncate text-foreground">
+                  SaaS Manage
+                </span>
+              )}
             </div>
-            <span className="font-bold text-lg tracking-tight">SaaS Manage</span>
+            <button
+              onClick={toggleSidebar}
+              title={isCollapsed ? 'Mở rộng sidebar' : 'Thu nhỏ sidebar'}
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer"
+            >
+              {isCollapsed ? (
+                <PanelLeftOpenIcon className="size-4" />
+              ) : (
+                <PanelLeftCloseIcon className="size-4" />
+              )}
+            </button>
           </div>
 
           {/* Workspace Switcher */}
-          <WorkspaceSwitcher />
+          <div className="px-0.5">
+            <WorkspaceSwitcher isCollapsed={isCollapsed} />
+          </div>
 
           {/* Nav Links */}
           <nav className="space-y-1">
@@ -99,15 +143,17 @@ export default function WorkspaceLayout({
                 <Link
                   key={item.href}
                   href={item.href}
+                  title={isCollapsed ? item.label : undefined}
                   className={cn(
-                    'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
+                    'flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all',
+                    isCollapsed ? 'justify-center px-0' : 'px-3',
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      : 'text-muted-foreground hover:bg-accent/80 hover:text-foreground'
                   )}
                 >
-                  <item.icon className="size-4 shrink-0" />
-                  <span>{item.label}</span>
+                  <item.icon className="size-4.5 shrink-0" />
+                  {!isCollapsed && <span className="truncate">{item.label}</span>}
                 </Link>
               );
             })}
@@ -115,30 +161,38 @@ export default function WorkspaceLayout({
         </div>
 
         {/* User Info Bottom */}
-        <div className="border-t border-border pt-4">
+        <div className="border-t border-border/80 pt-3">
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-sm hover:bg-accent focus:outline-none transition-colors cursor-pointer">
-                  <Avatar className="size-8">
+                <button
+                  title={user?.fullname || user?.email}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-xl p-2 text-left text-sm hover:bg-accent focus:outline-none transition-colors cursor-pointer',
+                    isCollapsed && 'justify-center p-1'
+                  )}
+                >
+                  <Avatar className="size-8.5 shrink-0 border border-border/60 shadow-xs">
                     {user?.avatar && <AvatarImage src={user.avatar} alt={user.email} />}
-                    <AvatarFallback>
+                    <AvatarFallback className="text-xs font-semibold">
                       {(user?.fullname || user?.email || 'U').substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-xs leading-tight">
-                    <span className="truncate font-semibold text-foreground">
-                      {user?.fullname || 'Tài khoản của tôi'}
-                    </span>
-                    <span className="truncate text-muted-foreground">{user?.email}</span>
-                  </div>
+                  {!isCollapsed && (
+                    <div className="grid flex-1 text-left text-xs leading-tight overflow-hidden">
+                      <span className="truncate font-semibold text-foreground">
+                        {user?.fullname || 'Tài khoản của tôi'}
+                      </span>
+                      <span className="truncate text-muted-foreground text-[11px]">{user?.email}</span>
+                    </div>
+                  )}
                 </button>
               }
             />
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align={isCollapsed ? 'start' : 'end'} side={isCollapsed ? 'right' : 'top'} className="w-56">
               <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => clearAuth()} className="text-destructive focus:text-destructive cursor-pointer">
+              <DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive cursor-pointer">
                 <LogOutIcon className="size-4 mr-2" />
                 Đăng xuất
               </DropdownMenuItem>
@@ -150,9 +204,9 @@ export default function WorkspaceLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-md dark:bg-card/80">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/80 bg-background/80 px-6 backdrop-blur-md dark:bg-card/80">
           <div className="flex items-center gap-3">
-            <h2 className="text-base font-semibold">
+            <h2 className="text-base font-semibold tracking-tight">
               {workspace?.name || 'Workspace'}
             </h2>
           </div>
@@ -160,27 +214,27 @@ export default function WorkspaceLayout({
           <div className="flex items-center gap-3">
             <ThemeToggle />
 
-            <button className="relative flex size-9 items-center justify-center rounded-xl border border-border bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80">
+            <button className="relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80">
               <BellIcon className="size-4" />
             </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <button className="flex items-center gap-2 rounded-full border border-border p-1 hover:bg-accent transition-colors cursor-pointer">
+                  <button className="flex items-center gap-2 rounded-full border border-border/80 p-1 hover:bg-accent transition-colors cursor-pointer">
                     <Avatar className="size-7">
                       {user?.avatar && <AvatarImage src={user.avatar} />}
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs">
                         {(user?.fullname || user?.email || 'U').substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </button>
                 }
               />
-              <DropdownMenuContent align="end" className="backdrop-blur-md bg-popover/90 border border-border/80">
+              <DropdownMenuContent align="end" className="backdrop-blur-md bg-popover/95 border border-border/80">
                 <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => clearAuth()} className="text-destructive cursor-pointer">
+                <DropdownMenuItem onClick={() => logout()} className="text-destructive cursor-pointer">
                   <LogOutIcon className="size-4 mr-2" />
                   Đăng xuất
                 </DropdownMenuItem>
