@@ -18,6 +18,7 @@ import { useWorkspaceStore } from '@/features/workspace/store/workspace-store';
 import { WorkspaceSwitcher } from '@/features/workspace/components/workspace-switcher';
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -118,7 +119,7 @@ export default function WorkspaceLayout({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-sm hover:bg-accent focus:outline-none transition-colors">
+                <button className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-sm hover:bg-accent focus:outline-none transition-colors cursor-pointer">
                   <Avatar className="size-8">
                     {user?.avatar && <AvatarImage src={user.avatar} alt={user.email} />}
                     <AvatarFallback>
@@ -149,7 +150,7 @@ export default function WorkspaceLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/95 px-6 backdrop-blur-xs dark:bg-card/95">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-md dark:bg-card/80">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold">
               {workspace?.name || 'Workspace'}
@@ -157,14 +158,16 @@ export default function WorkspaceLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative flex size-9 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground hover:text-foreground transition-colors dark:bg-card">
+            <ThemeToggle />
+
+            <button className="relative flex size-9 items-center justify-center rounded-xl border border-border bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80">
               <BellIcon className="size-4" />
             </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <button className="flex items-center gap-2 rounded-full border border-border p-1 hover:bg-accent transition-colors">
+                  <button className="flex items-center gap-2 rounded-full border border-border p-1 hover:bg-accent transition-colors cursor-pointer">
                     <Avatar className="size-7">
                       {user?.avatar && <AvatarImage src={user.avatar} />}
                       <AvatarFallback>
@@ -174,10 +177,11 @@ export default function WorkspaceLayout({
                   </button>
                 }
               />
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="backdrop-blur-md bg-popover/90 border border-border/80">
                 <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => clearAuth()} className="text-destructive cursor-pointer">
+                  <LogOutIcon className="size-4 mr-2" />
                   Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
