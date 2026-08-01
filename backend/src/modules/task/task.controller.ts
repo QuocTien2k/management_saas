@@ -222,6 +222,15 @@ export class TaskController {
   // SECTION 5: COMMENTS & ATTACHMENTS
   // ==========================================
 
+  @Get('tasks/:taskId/comments')
+  @HttpCode(HttpStatus.OK)
+  async findComments(
+    @Param('taskId') taskId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.taskService.findCommentsForTask(taskId, user.id);
+  }
+
   @Post('tasks/:taskId/comments')
   @HttpCode(HttpStatus.CREATED)
   async createComment(

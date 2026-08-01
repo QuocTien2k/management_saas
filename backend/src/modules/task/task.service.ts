@@ -821,6 +821,18 @@ export class TaskService {
   // SECTION 5: COMMENTS & ATTACHMENTS
   // ==========================================
 
+  async findCommentsForTask(taskId: string, userId: string) {
+    await this.checkTaskAccess(taskId, userId);
+
+    return this.prisma.comment.findMany({
+      where: { taskId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        user: { select: { id: true, fullname: true, email: true, avatar: true } },
+      },
+    });
+  }
+
   async createComment(taskId: string, userId: string, dto: CreateCommentDto) {
     const { task, project } = await this.checkTaskAccess(taskId, userId);
 
@@ -835,31 +847,68 @@ export class TaskService {
       },
     });
 
-    // Phát sự kiện realtime
+    // Phát sự kiện realtime cho room project (để tất cả người dùng đang xem task/dự án thấy ngay)
     this.taskGateway.emitToProject(task.projectId, 'comment:created', comment);
 
-    // Gửi thông báo cho assignee (nếu có và không phải người comment)
+    // Thu thập danh sách người nhận thông báo (Targeted Notifications)
+    const recipientIds = new Set<string>();
+
+    // 1. Assignee (nếu có và không phải tác giả)
     if (task.assigneeId && task.assigneeId !== userId) {
-      this.eventEmitter.emit(
-        'task.commented',
-        new TaskCommentEvent(
-          task.assigneeId,
-          'Có bình luận mới trong công việc',
-          `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
-          `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
-          project.workspaceId,
-        ),
-      );
+      recipientIds.add(task.assigneeId);
     }
 
-    // Gửi thông báo cho reporter (nếu không phải người comment và khác assignee)
-    if (task.reporterId !== userId && task.reporterId !== task.assigneeId) {
+    // 2. Owner / Reporter (nếu không phải tác giả)
+    if (task.reporterId && task.reporterId !== userId) {
+      recipientIds.add(task.reporterId);
+    }
+
+    // 3. Mentioned users từ dto hoặc tự động quét trong nội dung comment
+    const members = await this.prisma.workspaceMember.findMany({
+      where: { workspaceId: project.workspaceId },
+      include: { user: { select: { id: true, fullname: true, email: true } } },
+    });
+
+    const dtoMentions = dto.mentionedUserIds || [];
+    dtoMentions.forEach((id) => {
+      if (id !== userId) recipientIds.add(id);
+    });
+
+    for (const member of members) {
+      const u = member.user;
+      if (u.id === userId) continue;
+
+      const isMentionedByName = u.fullname && dto.content.toLowerCase().includes(`@${u.fullname.toLowerCase()}`);
+      const isMentionedByEmail = u.email && dto.content.toLowerCase().includes(`@${u.email.toLowerCase()}`);
+      const isMentionedById = dto.content.includes(u.id);
+
+      if (isMentionedByName || isMentionedByEmail || isMentionedById) {
+        recipientIds.add(u.id);
+      }
+    }
+
+    // Gửi thông báo đến danh sách người nhận hợp lệ (tác giả không nhận thông báo của chính mình)
+    for (const recipientId of recipientIds) {
+      const isMentioned = dtoMentions.includes(recipientId) ||
+        members.some((m) => m.userId === recipientId && (
+          (m.user.fullname && dto.content.toLowerCase().includes(`@${m.user.fullname.toLowerCase()}`)) ||
+          (m.user.email && dto.content.toLowerCase().includes(`@${m.user.email.toLowerCase()}`))
+        ));
+
+      const title = isMentioned
+        ? 'Bạn đã được nhắc đến trong một bình luận'
+        : 'Có bình luận mới trong công việc';
+
+      const message = isMentioned
+        ? `${comment.user.fullname} đã nhắc đến bạn trong công việc "${task.title}": "${dto.content.substring(0, 60)}..."`
+        : `${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 60)}..."`;
+
       this.eventEmitter.emit(
         'task.commented',
         new TaskCommentEvent(
-          task.reporterId,
-          'Có bình luận mới trong công việc',
-          `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
+          recipientId,
+          title,
+          message,
           `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
           project.workspaceId,
         ),
