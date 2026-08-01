@@ -254,7 +254,24 @@ export class TaskService {
   }
 
   async updateTask(id: string, userId: string, dto: UpdateTaskDto) {
-    const { task, project } = await this.checkTaskAccess(id, userId);
+    const { task, project, membership } = await this.checkTaskAccess(id, userId);
+
+    const isOwnerOrAdmin =
+      membership.role === WorkspaceRole.OWNER || membership.role === WorkspaceRole.ADMIN;
+    const isReporter = task.reporterId === userId;
+
+    if (!isOwnerOrAdmin && !isReporter) {
+      const isUpdatingOtherFields =
+        (dto.title !== undefined && dto.title !== task.title) ||
+        (dto.description !== undefined && dto.description !== task.description) ||
+        (dto.priority !== undefined && dto.priority !== task.priority) ||
+        dto.dueDate !== undefined ||
+        (dto.assigneeId !== undefined && dto.assigneeId !== task.assigneeId);
+
+      if (isUpdatingOtherFields) {
+        throw new ForbiddenException('Thành viên chỉ được phép cập nhật trạng thái của công việc.');
+      }
+    }
 
     const data: any = {};
 
