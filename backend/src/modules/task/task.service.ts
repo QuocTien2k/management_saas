@@ -12,9 +12,9 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { MoveTaskDto } from './dto/move-task.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateLabelDto } from './dto/create-label.dto';
-import { WorkspaceRole, TaskStatus, TaskPriority } from '@prisma/client';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType, WorkspaceRole, TaskStatus, TaskPriority } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { TaskAssignedEvent, TaskCommentEvent } from '../notification/events/notification.events';
 
 @Injectable()
 export class TaskService {
@@ -22,6 +22,7 @@ export class TaskService {
     private prisma: PrismaService,
     private taskGateway: TaskGateway,
     private eventEmitter: EventEmitter2,
+    private notificationService: NotificationService,
   ) {}
 
   // Helper để kiểm tra quyền truy cập của User vào Project
@@ -166,18 +167,16 @@ export class TaskService {
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(task.projectId, 'task:created', task);
 
-    // Phát sự kiện thông báo nếu có người thực hiện
-    if (task.assigneeId) {
-      this.eventEmitter.emit(
-        'task.assigned',
-        new TaskAssignedEvent(
-          task.assigneeId,
-          'Bạn đã được phân công công việc mới',
-          `Bạn đã được giao công việc "${task.title}" trong dự án "${project.name}".`,
-          `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
-          project.workspaceId,
-        ),
-      );
+    // Gửi thông báo trực tiếp & lưu DB nếu có người thực hiện khác tác giả
+    if (task.assigneeId && task.assigneeId !== userId) {
+      await this.notificationService.createNotification({
+        userId: task.assigneeId,
+        type: NotificationType.TASK_ASSIGNED,
+        title: 'Bạn đã được phân công công việc mới',
+        message: `Bạn đã được giao công việc "${task.title}" trong dự án "${project.name}".`,
+        link: `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
+        workspaceId: project.workspaceId,
+      });
     }
 
     // Phát event để ghi nhận Activity Log
@@ -347,18 +346,16 @@ export class TaskService {
     // Phát sự kiện realtime
     this.taskGateway.emitToProject(updatedTask.projectId, 'task:updated', updatedTask);
 
-    // Phát sự kiện thông báo nếu đổi người thực hiện
-    if (dto.assigneeId && dto.assigneeId !== task.assigneeId) {
-      this.eventEmitter.emit(
-        'task.assigned',
-        new TaskAssignedEvent(
-          dto.assigneeId,
-          'Bạn đã được phân công công việc mới',
-          `Bạn đã được giao công việc "${updatedTask.title}" trong dự án "${project.name}".`,
-          `/workspaces/${project.workspaceId}/projects/${updatedTask.projectId}?taskId=${updatedTask.id}`,
-          project.workspaceId,
-        ),
-      );
+    // Gửi thông báo trực tiếp & lưu DB nếu đổi người thực hiện
+    if (dto.assigneeId && dto.assigneeId !== task.assigneeId && dto.assigneeId !== userId) {
+      await this.notificationService.createNotification({
+        userId: dto.assigneeId,
+        type: NotificationType.TASK_ASSIGNED,
+        title: 'Bạn đã được phân công công việc mới',
+        message: `Bạn đã được giao công việc "${updatedTask.title}" trong dự án "${project.name}".`,
+        link: `/workspaces/${project.workspaceId}/projects/${updatedTask.projectId}?taskId=${updatedTask.id}`,
+        workspaceId: project.workspaceId,
+      });
     }
 
     // Tính toán các trường thay đổi để ghi log
@@ -863,7 +860,19 @@ export class TaskService {
       recipientIds.add(task.reporterId);
     }
 
-    // 3. Mentioned users từ dto hoặc tự động quét trong nội dung comment
+    // 3. Người dùng đã từng bình luận trong công việc này trước đó (Watchers/Followers)
+    const previousCommenters = await this.prisma.comment.findMany({
+      where: { taskId },
+      select: { userId: true },
+      distinct: ['userId'],
+    });
+    for (const pc of previousCommenters) {
+      if (pc.userId !== userId) {
+        recipientIds.add(pc.userId);
+      }
+    }
+
+    // 4. Mentioned users từ dto hoặc tự động quét trong nội dung comment
     const members = await this.prisma.workspaceMember.findMany({
       where: { workspaceId: project.workspaceId },
       include: { user: { select: { id: true, fullname: true, email: true } } },
@@ -887,7 +896,7 @@ export class TaskService {
       }
     }
 
-    // Gửi thông báo đến danh sách người nhận hợp lệ (tác giả không nhận thông báo của chính mình)
+    // Gửi thông báo trực tiếp & lưu DB cho danh sách người nhận hợp lệ (tác giả không nhận thông báo của chính mình)
     for (const recipientId of recipientIds) {
       const isMentioned = dtoMentions.includes(recipientId) ||
         members.some((m) => m.userId === recipientId && (
@@ -903,16 +912,14 @@ export class TaskService {
         ? `${comment.user.fullname} đã nhắc đến bạn trong công việc "${task.title}": "${dto.content.substring(0, 60)}..."`
         : `${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 60)}..."`;
 
-      this.eventEmitter.emit(
-        'task.commented',
-        new TaskCommentEvent(
-          recipientId,
-          title,
-          message,
-          `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
-          project.workspaceId,
-        ),
-      );
+      await this.notificationService.createNotification({
+        userId: recipientId,
+        type: NotificationType.TASK_COMMENT,
+        title,
+        message,
+        link: `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
+        workspaceId: project.workspaceId,
+      });
     }
 
     // Emit event để ghi nhận Activity Log

@@ -37,7 +37,26 @@ export function useNotificationSocket() {
         : notification.message || notification.title || 'Thông báo mới';
       toast.info(toastMessage);
 
-      // Làm mới danh sách thông báo & unread count trên UI
+      // Cập nhật ngay danh sách thông báo vào cache của React Query để NotificationPopover nhận ngay lập tức
+      queryClient.setQueriesData({ queryKey: NOTIFICATION_KEYS.all }, (oldData: any) => {
+        if (!oldData) {
+          return { items: [notification], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } };
+        }
+        const currentItems = oldData.items || [];
+        if (currentItems.some((item: any) => item.id === notification.id)) {
+          return oldData;
+        }
+        return {
+          ...oldData,
+          items: [notification, ...currentItems],
+          meta: {
+            ...oldData.meta,
+            total: (oldData.meta?.total || 0) + 1,
+          },
+        };
+      });
+
+      // Làm mới cache query để đảm bảo đồng bộ hoàn toàn
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
 
       // Nếu thông báo là lời mời tham gia workspace hoặc thay đổi workspace, refresh workspace list

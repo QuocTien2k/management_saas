@@ -50,7 +50,10 @@ export class NotificationService {
     }
 
     if (filters.workspaceId) {
-      where.workspaceId = filters.workspaceId;
+      where.OR = [
+        { workspaceId: filters.workspaceId },
+        { workspaceId: null },
+      ];
     }
 
     const [items, total] = await Promise.all([
@@ -95,7 +98,10 @@ export class NotificationService {
   async markAllAsRead(userId: string, workspaceId?: string) {
     const where: any = { userId, isRead: false };
     if (workspaceId) {
-      where.workspaceId = workspaceId;
+      where.OR = [
+        { workspaceId },
+        { workspaceId: null },
+      ];
     }
 
     await this.prisma.notification.updateMany({

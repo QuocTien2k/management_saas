@@ -1,6 +1,12 @@
 import { apiClient } from '@/shared/api/client';
 import { NotificationListResponse, Notification } from '../types/notification.types';
 
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
 export const notificationService = {
   async getNotifications(params?: {
     workspaceId?: string;
@@ -8,24 +14,28 @@ export const notificationService = {
     page?: number;
     limit?: number;
   }): Promise<NotificationListResponse> {
-    const response = await apiClient.get('/notifications', { params });
-    return response.data;
+    const response = await apiClient.get<ApiResponse<NotificationListResponse>>('/notifications', { params });
+    const res = response.data as any;
+    return res.data || res;
   },
 
   async markAsRead(id: string): Promise<Notification> {
-    const response = await apiClient.patch(`/notifications/${id}/read`);
-    return response.data;
+    const response = await apiClient.patch<ApiResponse<Notification>>(`/notifications/${id}/read`, {});
+    const res = response.data as any;
+    return res.data || res;
   },
 
   async markAllAsRead(workspaceId?: string): Promise<{ message: string }> {
-    const response = await apiClient.patch('/notifications/read-all', null, {
+    const response = await apiClient.patch<ApiResponse<{ message: string }>>('/notifications/read-all', {}, {
       params: { workspaceId },
     });
-    return response.data;
+    const res = response.data as any;
+    return res.data || res;
   },
 
   async deleteNotification(id: string): Promise<{ message: string }> {
-    const response = await apiClient.delete(`/notifications/${id}`);
-    return response.data;
+    const response = await apiClient.delete<ApiResponse<{ message: string }>>(`/notifications/${id}`);
+    const res = response.data as any;
+    return res.data || res;
   },
 };

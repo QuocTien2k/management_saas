@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TaskService } from './task.service';
 import { TaskController } from './task.controller';
 import { TaskGateway } from './task.gateway';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { TaskGateway } from './task.gateway';
       secret: process.env.JWT_SECRET || 'dqt.developer',
       signOptions: { expiresIn: '15m' },
     }),
+    NotificationModule,
   ],
   controllers: [TaskController],
   providers: [TaskService, TaskGateway],
