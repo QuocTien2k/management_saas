@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { TaskStatus } from '@prisma/client';
+import { TaskStatus, WorkspaceRole } from '@prisma/client';
 
 @Injectable()
 export class ProjectService {
@@ -15,7 +15,7 @@ export class ProjectService {
 
   // 1. Tạo mới Project và tự động sinh 4 cột Kanban mặc định
   async create(userId: string, dto: CreateProjectDto) {
-    // Kiểm tra xem User có thuộc về Workspace này không
+    // Kiểm tra xem User có thuộc về Workspace này và có quyền Admin/Owner không
     const membership = await this.prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
@@ -25,9 +25,9 @@ export class ProjectService {
       },
     });
 
-    if (!membership) {
+    if (!membership || (membership.role !== WorkspaceRole.OWNER && membership.role !== WorkspaceRole.ADMIN)) {
       throw new ForbiddenException(
-        'Bạn không có quyền tạo dự án trong không gian làm việc này.',
+        'Bạn không có quyền tạo dự án. Chỉ Quản trị viên (Admin/Owner) mới có quyền tạo dự án.',
       );
     }
 
@@ -173,7 +173,7 @@ export class ProjectService {
       },
     });
 
-    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+    if (!membership || (membership.role !== WorkspaceRole.OWNER && membership.role !== WorkspaceRole.ADMIN)) {
       throw new ForbiddenException('Chỉ có quản trị viên mới được cập nhật dự án.');
     }
 
@@ -206,7 +206,7 @@ export class ProjectService {
       },
     });
 
-    if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+    if (!membership || (membership.role !== WorkspaceRole.OWNER && membership.role !== WorkspaceRole.ADMIN)) {
       throw new ForbiddenException('Chỉ có quản trị viên mới được xóa dự án.');
     }
 

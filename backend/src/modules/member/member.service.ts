@@ -10,6 +10,8 @@ import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import { AcceptInvitationDto } from './dto/accept-invitation.dto';
 import { WorkspaceRole, MemberStatus } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MemberInvitedEvent } from '../notification/events/notification.events';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -17,6 +19,7 @@ export class MemberService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // 1. Lấy danh sách thành viên trong Workspace
@@ -132,6 +135,24 @@ export class MemberService {
       });
       throw new BadRequestException(
         'Gửi email lời mời thất bại. Vui lòng thử lại sau.',
+      );
+    }
+
+    // Phát sự kiện thông báo thời gian thực nếu người dùng đã có tài khoản trên hệ thống
+    const invitedUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (invitedUser) {
+      this.eventEmitter.emit(
+        'member.invited',
+        new MemberInvitedEvent(
+          invitedUser.id,
+          'Lời mời tham gia Workspace',
+          `${inviter?.fullname || 'Một thành viên'} đã mời bạn tham gia Workspace "${workspace.name}"`,
+          `/workspace-invitations/accept?token=${token}`,
+          workspaceId,
+        ),
       );
     }
 

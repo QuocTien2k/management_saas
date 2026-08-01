@@ -12,7 +12,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { MoveTaskDto } from './dto/move-task.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateLabelDto } from './dto/create-label.dto';
-import { WorkspaceRole, TaskStatus } from '@prisma/client';
+import { WorkspaceRole, TaskStatus, TaskPriority } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TaskAssignedEvent, TaskCommentEvent } from '../notification/events/notification.events';
 
@@ -68,6 +68,25 @@ export class TaskService {
     return { task, ...access };
   }
 
+  // Helper tìm cột Kanban an toàn theo columnId (UUID) hoặc TaskStatus (enum)
+  private async findProjectColumn(projectId: string, targetIdOrStatus: string) {
+    const isEnumStatus = Object.values(TaskStatus).includes(targetIdOrStatus as TaskStatus);
+
+    return this.prisma.projectColumn.findFirst({
+      where: {
+        projectId,
+        ...(isEnumStatus
+          ? {
+              OR: [
+                { id: targetIdOrStatus },
+                { status: targetIdOrStatus as TaskStatus },
+              ],
+            }
+          : { id: targetIdOrStatus }),
+      },
+    });
+  }
+
   // ==========================================
   // SECTION 1: TASK CRUD & MOVE
   // ==========================================
@@ -75,13 +94,28 @@ export class TaskService {
   async createTask(userId: string, dto: CreateTaskDto) {
     const { project } = await this.checkProjectAccess(dto.projectId, userId);
 
-    // Kiểm tra xem column có thuộc về Project không
-    const column = await this.prisma.projectColumn.findFirst({
-      where: { id: dto.columnId, projectId: dto.projectId },
-    });
+    const targetIdOrStatus = dto.columnId || (dto.status as string);
 
-    if (!column) {
-      throw new BadRequestException('Cột Kanban không thuộc về dự án này.');
+    let targetColumnId: string | null = null;
+    let targetStatus: TaskStatus = TaskStatus.TODO;
+
+    if (targetIdOrStatus) {
+      const column = await this.findProjectColumn(dto.projectId, targetIdOrStatus);
+
+      if (column) {
+        targetColumnId = column.id;
+        targetStatus = column.status;
+      } else if (Object.values(TaskStatus).includes(targetIdOrStatus as TaskStatus)) {
+        targetStatus = targetIdOrStatus as TaskStatus;
+        targetColumnId = null;
+      } else if (dto.status && Object.values(TaskStatus).includes(dto.status)) {
+        targetStatus = dto.status;
+        targetColumnId = null;
+      } else {
+        throw new BadRequestException('Cột Kanban hoặc trạng thái không hợp lệ.');
+      }
+    } else if (dto.status) {
+      targetStatus = dto.status;
     }
 
     // Nếu có gán người thực hiện, kiểm tra xem người đó có thuộc Workspace không
@@ -99,9 +133,9 @@ export class TaskService {
       }
     }
 
-    // Tính toán position: Lấy position lớn nhất trong cột hiện tại + 65535.0
+    // Tính toán position: Lấy position lớn nhất trong project + 65535.0
     const lastTask = await this.prisma.task.findFirst({
-      where: { columnId: dto.columnId, deletedAt: null },
+      where: { projectId: dto.projectId, deletedAt: null },
       orderBy: { position: 'desc' },
     });
 
@@ -111,12 +145,12 @@ export class TaskService {
       data: {
         title: dto.title,
         description: dto.description,
-        status: column.status, // Đồng bộ status theo cột
-        priority: dto.priority,
+        status: targetStatus,
+        priority: dto.priority || TaskPriority.MEDIUM,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
         position,
         projectId: dto.projectId,
-        columnId: dto.columnId,
+        columnId: targetColumnId,
         reporterId: userId,
         assigneeId: dto.assigneeId || null,
       },
@@ -138,7 +172,7 @@ export class TaskService {
           'Bạn đã được phân công công việc mới',
           `Bạn đã được giao công việc "${task.title}" trong dự án "${project.name}".`,
           `/project/${task.projectId}?taskId=${task.id}`,
-          project.id,
+          project.workspaceId,
         ),
       );
     }
@@ -320,7 +354,7 @@ export class TaskService {
           'Bạn đã được phân công công việc mới',
           `Bạn đã được giao công việc "${updatedTask.title}" trong dự án "${project.name}".`,
           `/project/${updatedTask.projectId}?taskId=${updatedTask.id}`,
-          project.id,
+          project.workspaceId,
         ),
       );
     }
@@ -390,26 +424,42 @@ export class TaskService {
   async moveTask(id: string, userId: string, dto: MoveTaskDto) {
     const { task, project } = await this.checkTaskAccess(id, userId);
 
-    // Kiểm tra xem cột Kanban có tồn tại trong dự án không
-    const column = await this.prisma.projectColumn.findFirst({
-      where: { id: dto.columnId, projectId: task.projectId },
-    });
-
-    if (!column) {
-      throw new BadRequestException('Cột Kanban đích không thuộc về dự án này.');
+    const targetIdOrStatus = dto.columnId || (dto.status as string);
+    if (!targetIdOrStatus) {
+      throw new BadRequestException('Phải cung cấp cột hoặc trạng thái đích.');
     }
 
-    const [oldColumn, newColumn] = await Promise.all([
-      this.prisma.projectColumn.findUnique({ where: { id: task.columnId } }),
-      this.prisma.projectColumn.findUnique({ where: { id: dto.columnId } }),
-    ]);
+    const column = await this.findProjectColumn(task.projectId, targetIdOrStatus);
+
+    let newStatus: TaskStatus;
+    let newColumnId: string | null = null;
+
+    if (column) {
+      newColumnId = column.id;
+      newStatus = column.status;
+    } else {
+      const validStatuses = Object.values(TaskStatus);
+      if (validStatuses.includes(targetIdOrStatus as TaskStatus)) {
+        newStatus = targetIdOrStatus as TaskStatus;
+        newColumnId = null;
+      } else if (dto.status && validStatuses.includes(dto.status)) {
+        newStatus = dto.status;
+        newColumnId = null;
+      } else {
+        throw new BadRequestException('Cột Kanban hoặc trạng thái đích không hợp lệ.');
+      }
+    }
+
+    const oldColumn = task.columnId
+      ? await this.prisma.projectColumn.findUnique({ where: { id: task.columnId } })
+      : null;
 
     const movedTask = await this.prisma.task.update({
       where: { id },
       data: {
-        columnId: dto.columnId,
+        columnId: newColumnId,
         position: dto.position,
-        status: column.status,
+        status: newStatus,
       },
     });
 
@@ -420,7 +470,7 @@ export class TaskService {
     this.eventEmitter.emit('task.moved', {
       task: movedTask,
       oldColumnName: oldColumn?.name || 'Không rõ',
-      newColumnName: newColumn?.name || 'Không rõ',
+      newColumnName: column?.name || newStatus,
       workspaceId: project.workspaceId,
       userId,
     });
@@ -800,7 +850,7 @@ export class TaskService {
           'Có bình luận mới trong công việc',
           `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
           `/project/${task.projectId}?taskId=${task.id}`,
-          task.projectId,
+          project.workspaceId,
         ),
       );
     }
@@ -814,7 +864,7 @@ export class TaskService {
           'Có bình luận mới trong công việc',
           `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
           `/project/${task.projectId}?taskId=${task.id}`,
-          task.projectId,
+          project.workspaceId,
         ),
       );
     }

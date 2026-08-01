@@ -49,10 +49,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else {
       // Log unhandled error for debug
       console.error('Unhandled Exception:', exception);
-      // Optional check for Prisma DB errors
-      if (exception?.code) {
+      
+      // Xử lý lỗi validation từ Prisma Client
+      if (exception?.name === 'PrismaClientValidationError') {
+        status = HttpStatus.BAD_REQUEST;
+        code = 'VALIDATION_ERROR';
+        message = 'Dữ liệu truyền vào truy vấn cơ sở dữ liệu không hợp lệ.';
+      } else if (exception?.code) {
+        status = HttpStatus.BAD_REQUEST;
         code = `DATABASE_ERROR_${exception.code}`;
-        message = 'Database operation failed';
+        message = 'Thao tác cơ sở dữ liệu thất bại.';
       }
     }
 

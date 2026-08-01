@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { TaskStatus } from '@prisma/client';
 
 export class MoveTaskDto {
-  @IsNotEmpty({ message: 'ID cột đích không được để trống' })
+  @IsOptional()
   @IsString()
-  columnId: string;
+  columnId?: string;
+
+  @IsOptional()
+  @IsEnum(TaskStatus)
+  status?: TaskStatus;
 
   @IsNotEmpty({ message: 'Vị trí mới không được để trống' })
   @IsNumber()
