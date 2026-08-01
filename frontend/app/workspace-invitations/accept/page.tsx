@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   UsersIcon,
   CheckCircle2Icon,
@@ -11,22 +12,27 @@ import {
   ArrowRightIcon,
   LogInIcon,
   UserPlusIcon,
+  LogOutIcon,
+  Building2Icon,
 } from 'lucide-react';
 
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import { memberService } from '@/features/workspace/services/member-service';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { WORKSPACE_KEYS } from '@/features/workspace/hooks/use-workspace';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function AcceptInvitationPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const token = searchParams.get('token');
 
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, clearAuth } = useAuthStore();
 
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [isEmailMismatch, setIsEmailMismatch] = React.useState(false);
   const [joinedWorkspace, setJoinedWorkspace] = React.useState<any>(null);
 
   const hasAttemptedRef = React.useRef(false);
@@ -53,19 +59,43 @@ export default function AcceptInvitationPage() {
         setStatus('success');
         setJoinedWorkspace(result.workspace);
         sessionStorage.removeItem('pending_invite_token');
+
+        // Làm mới cache danh sách Workspace của người dùng
+        queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.lists() });
+
+        // Tự động điều hướng sau 1.5s
+        const wsId = result.workspace?.id || result.workspace?.workspaceId;
+        setTimeout(() => {
+          if (wsId) {
+            router.push(`/workspaces/${wsId}`);
+          } else {
+            router.push('/workspaces');
+          }
+        }, 1500);
       } catch (err: any) {
         console.error('Accept invitation error:', err);
         setStatus('error');
-        setErrorMessage(
+        const msg =
           err?.response?.data?.error?.message ||
-            err?.response?.data?.message ||
-            'Lời mời đã hết hạn hoặc bạn đã tham gia Workspace này rồi.'
-        );
+          err?.response?.data?.message ||
+          'Lời mời đã hết hạn hoặc bạn đã tham gia Workspace này rồi.';
+        
+        setErrorMessage(msg);
+        if (msg.includes('không trùng khớp') || err?.response?.status === 403) {
+          setIsEmailMismatch(true);
+        }
       }
     }
 
     handleAccept();
-  }, [token, isAuthenticated]);
+  }, [token, isAuthenticated, queryClient, router]);
+
+  // Xử lý chuyển tài khoản khi bị lệch Email nhận lời mời
+  const handleSwitchAccount = () => {
+    clearAuth();
+    const callbackUrl = encodeURIComponent(`/workspace-invitations/accept?token=${token || ''}`);
+    router.push(`/login?callbackUrl=${callbackUrl}`);
+  };
 
   // Giao diện khi người dùng chưa đăng nhập
   if (!isAuthenticated) {
@@ -81,7 +111,7 @@ export default function AcceptInvitationPage() {
               Lời mời tham gia Workspace
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-xs mx-auto">
-              Bạn được mời tham gia làm việc chung trong nhóm. Vui lòng đăng nhập hoặc đăng ký tài khoản để tiếp tục.
+              Bạn được mời tham gia làm việc chung trong nhóm. Vui lòng đăng nhập hoặc đăng ký bằng tài khoản email nhận lời mời để tiếp tục.
             </CardDescription>
           </CardHeader>
 
@@ -92,7 +122,7 @@ export default function AcceptInvitationPage() {
                 Đăng nhập để nhận lời mời
               </Button>
             </Link>
-            <Link href={`/register?callbackUrl=${callbackUrl}`} className="w-full">
+            <Link href={`/signup?callbackUrl=${callbackUrl}`} className="w-full">
               <Button variant="outline" className="w-full h-10 text-sm font-semibold gap-2 shadow-xs cursor-pointer">
                 <UserPlusIcon className="size-4 text-muted-foreground" />
                 Tạo tài khoản mới
@@ -155,18 +185,37 @@ export default function AcceptInvitationPage() {
                 <XCircleIcon className="size-7" />
               </div>
               <CardTitle className="text-xl font-bold tracking-tight text-foreground">
-                Không thể nhận lời mời
+                {isEmailMismatch ? 'Email tài khoản không khớp' : 'Không thể nhận lời mời'}
               </CardTitle>
               <CardDescription className="text-sm text-destructive font-medium mt-2 leading-relaxed max-w-xs mx-auto">
                 {errorMessage || 'Lời mời không hợp lệ hoặc đã hết hạn.'}
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 pt-2">
-              <Link href="/workspaces" className="w-full">
-                <Button variant="outline" className="w-full h-10 text-sm font-semibold gap-2 shadow-xs cursor-pointer">
-                  Về danh sách Workspace
-                </Button>
-              </Link>
+            <CardContent className="p-6 pt-2 flex flex-col gap-3">
+              {isEmailMismatch ? (
+                <>
+                  <Button
+                    onClick={handleSwitchAccount}
+                    className="w-full h-10 text-sm font-semibold gap-2 shadow-xs cursor-pointer"
+                  >
+                    <LogOutIcon className="size-4" />
+                    Đăng xuất & Đăng nhập email khác
+                  </Button>
+                  <Link href="/workspaces" className="w-full">
+                    <Button variant="outline" className="w-full h-10 text-sm font-semibold gap-2 shadow-xs cursor-pointer">
+                      <Building2Icon className="size-4 text-muted-foreground" />
+                      Về Workspace của tôi
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <Link href="/workspaces" className="w-full">
+                  <Button variant="outline" className="w-full h-10 text-sm font-semibold gap-2 shadow-xs cursor-pointer">
+                    <Building2Icon className="size-4 text-muted-foreground" />
+                    Về danh sách Workspace
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </>
         )}

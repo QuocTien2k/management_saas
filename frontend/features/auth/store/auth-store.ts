@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useWorkspaceStore } from '@/features/workspace/store/workspace-store';
 
 export interface User {
   id: string;
@@ -26,10 +27,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken,
       isAuthenticated: true,
     }),
-  clearAuth: () =>
+  clearAuth: () => {
+    useWorkspaceStore.getState().clearWorkspace();
     set({
       user: null,
       accessToken: null,
       isAuthenticated: false,
-    }),
+    });
+  },
 }));

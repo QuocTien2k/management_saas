@@ -21,6 +21,7 @@ import { useAuthStore } from '@/features/auth/store/auth-store';
 import { useLogout } from '@/features/auth/hooks/use-logout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { NotificationPopover } from '@/features/notification/components/notification-popover';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -239,9 +240,7 @@ export default function WorkspaceLayout({
           <div className="flex items-center gap-3">
             <ThemeToggle />
 
-            <button className="relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80">
-              <BellIcon className="size-4" />
-            </button>
+            <NotificationPopover workspaceId={workspaceId} />
 
             <DropdownMenu>
               <DropdownMenuTrigger

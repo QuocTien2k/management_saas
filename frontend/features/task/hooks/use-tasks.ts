@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/task-service';
-import { Task, CreateTaskInput, UpdateTaskInput, MoveTaskInput, TaskFilters } from '../types/task.types';
+import { Task, TaskStatus, CreateTaskInput, UpdateTaskInput, MoveTaskInput, TaskFilters } from '../types/task.types';
 
 export function useProjectTasks(projectId: string, filters?: TaskFilters) {
   return useQuery({
@@ -79,7 +79,7 @@ export function useMoveTask(projectId: string) {
         if (!oldTasks) return [];
         return oldTasks.map((t) =>
           t.id === taskId
-            ? { ...t, status: data.columnId, position: data.newPosition }
+            ? { ...t, status: (data.columnId as TaskStatus), position: data.position }
             : t
         );
       });

@@ -9,14 +9,27 @@ import { Input } from '@/components/ui/input';
 import { useProjects } from '@/features/project/hooks/use-projects';
 import { ProjectCard } from '@/features/project/components/project-card';
 import { CreateProjectDialog } from '@/features/project/components/create-project-dialog';
+import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
+import { useAuthStore } from '@/features/auth/store/auth-store';
 
 export default function WorkspaceProjectsPage() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
 
+  const { user } = useAuthStore();
   const { data: projects, isLoading } = useProjects(workspaceId);
+  const { data: workspaceMembers } = useWorkspaceMembers(workspaceId);
+
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
+
+  const isOwnerOrAdmin = React.useMemo(() => {
+    if (!workspaceMembers || !user?.id) return false;
+    const currentMember = workspaceMembers.find(
+      (m) => m.userId === user.id || m.user?.id === user.id
+    );
+    return currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
+  }, [workspaceMembers, user?.id]);
 
   const filteredProjects = React.useMemo(() => {
     if (!projects) return [];
@@ -41,14 +54,16 @@ export default function WorkspaceProjectsPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => setCreateDialogOpen(true)}
-          size="sm"
-          className="gap-2 shadow-xs cursor-pointer self-start sm:self-auto"
-        >
-          <PlusIcon className="size-4" />
-          Tạo Dự án mới
-        </Button>
+        {isOwnerOrAdmin && (
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            size="sm"
+            className="gap-2 shadow-xs cursor-pointer self-start sm:self-auto"
+          >
+            <PlusIcon className="size-4" />
+            Tạo Dự án mới
+          </Button>
+        )}
       </div>
 
       {/* Toolbar & Search */}
@@ -84,23 +99,27 @@ export default function WorkspaceProjectsPage() {
           <p className="text-xs text-muted-foreground mt-1 max-w-xs">
             Bắt đầu tổ chức công việc bằng cách tạo dự án đầu tiên cho Workspace của bạn.
           </p>
-          <Button
-            onClick={() => setCreateDialogOpen(true)}
-            size="sm"
-            className="mt-4 gap-2 shadow-xs cursor-pointer"
-          >
-            <PlusIcon className="size-4" />
-            Tạo Dự án mới
-          </Button>
+          {isOwnerOrAdmin && (
+            <Button
+              onClick={() => setCreateDialogOpen(true)}
+              size="sm"
+              className="mt-4 gap-2 shadow-xs cursor-pointer"
+            >
+              <PlusIcon className="size-4" />
+              Tạo Dự án mới
+            </Button>
+          )}
         </div>
       )}
 
       {/* Modal tạo dự án */}
-      <CreateProjectDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        workspaceId={workspaceId}
-      />
+      {isOwnerOrAdmin && (
+        <CreateProjectDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          workspaceId={workspaceId}
+        />
+      )}
     </div>
   );
 }

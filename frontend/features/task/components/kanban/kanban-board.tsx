@@ -58,7 +58,7 @@ export function KanbanBoard({
       taskId: draggableId,
       data: {
         columnId: newStatus,
-        newPosition: newPosition,
+        position: newPosition,
       },
     });
   };

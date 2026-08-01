@@ -40,8 +40,15 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
+    const url = config.url || '';
+    const isGlobalRoute =
+      url.startsWith('/auth') ||
+      url.startsWith('/workspace-invitations') ||
+      url === '/workspaces' ||
+      url === 'workspaces';
+
     const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
-    if (activeWorkspaceId && config.headers) {
+    if (activeWorkspaceId && config.headers && !isGlobalRoute) {
       config.headers['x-workspace-id'] = activeWorkspaceId;
     }
 
@@ -53,19 +60,10 @@ apiClient.interceptors.request.use(
 // Response Interceptor: Tự động xử lý Refresh Token khi gặp lỗi 401
 apiClient.interceptors.response.use(
   (response) => {
-    // Trả về trực tiếp data để tiện xử lý ở UI (tùy thuộc sở thích, hoặc trả về response gốc)
     return response;
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-    // Nếu gặp lỗi 403 Forbidden (Không có quyền truy cập)
-    if (error.response?.status === 403 && typeof window !== 'undefined') {
-      if (window.location.pathname !== '/403') {
-        window.location.href = '/403';
-      }
-      return Promise.reject(error);
-    }
 
     // Nếu không có response hoặc mã lỗi không phải là 401 Unauthorized
     if (!error.response || error.response.status !== 401) {

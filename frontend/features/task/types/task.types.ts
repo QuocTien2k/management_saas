@@ -54,8 +54,8 @@ export interface UpdateTaskInput {
 }
 
 export interface MoveTaskInput {
-  columnId: TaskStatus; // new status/column
-  newPosition: number;
+  columnId: string;
+  position: number;
 }
 
 export interface TaskFilters {

@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   description: "Hệ thống quản lý công việc và dự án hiện đại",
 };
 
+import SocketProvider from "@/providers/socket-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,8 +38,10 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="system">
           <QueryProvider>
             <AuthProvider>
-              {children}
-              <CustomToastContainer />
+              <SocketProvider>
+                {children}
+                <CustomToastContainer />
+              </SocketProvider>
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
