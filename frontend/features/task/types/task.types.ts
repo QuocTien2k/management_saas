@@ -9,6 +9,13 @@ export interface TaskAssignee {
   avatar?: string | null;
 }
 
+export interface MemberOption {
+  id: string;
+  fullname?: string | null;
+  email?: string;
+  avatar?: string | null;
+}
+
 export interface Task {
   id: string;
   title: string;

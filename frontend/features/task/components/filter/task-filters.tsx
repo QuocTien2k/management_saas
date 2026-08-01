@@ -6,13 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TaskFilters, TaskPriority, TaskStatus } from '../../types/task.types';
-
-interface MemberOption {
-  id: string;
-  fullname: string;
-  avatar?: string | null;
-}
+import { MemberOption, TaskFilters, TaskPriority, TaskStatus } from '../../types/task.types';
 
 interface TaskFiltersProps {
   filters: TaskFilters;

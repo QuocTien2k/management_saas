@@ -11,19 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CommentSection } from '@/features/comment/components/comment-section';
 
-import { TaskPriority, TaskStatus } from '../../types/task.types';
+import { MemberOption, TaskPriority, TaskStatus } from '../../types/task.types';
 import { useUpdateTask, useDeleteTask, useTaskDetail } from '../../hooks/use-tasks';
-
-interface MemberOption {
-  id: string;
-  fullname: string;
-  email: string;
-  avatar?: string | null;
-}
+import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
+import { useAuthStore } from '@/features/auth/store/auth-store';
 
 interface TaskDetailModalProps {
   taskId: string | null;
   projectId: string;
+  workspaceId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   members?: MemberOption[];
@@ -46,11 +42,14 @@ const priorityMap: Record<TaskPriority, string> = {
 export function TaskDetailModal({
   taskId,
   projectId,
+  workspaceId,
   open,
   onOpenChange,
   members,
 }: TaskDetailModalProps) {
+  const { user } = useAuthStore();
   const { data: task, isLoading } = useTaskDetail(open ? taskId : null);
+  const { data: workspaceMembers } = useWorkspaceMembers(workspaceId || null);
   const updateTask = useUpdateTask(projectId);
   const deleteTask = useDeleteTask(projectId);
 
@@ -58,6 +57,15 @@ export function TaskDetailModal({
   const [description, setDescription] = React.useState('');
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
   const [isEditingDesc, setIsEditingDesc] = React.useState(false);
+
+  const currentMember = React.useMemo(() => {
+    if (!workspaceMembers || !user?.id) return null;
+    return workspaceMembers.find((m) => m.userId === user.id || m.user.id === user.id);
+  }, [workspaceMembers, user?.id]);
+
+  const isOwnerOrAdmin = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
+  const isReporter = Boolean(task?.reporterId && user?.id && task.reporterId === user.id);
+  const canDelete = isOwnerOrAdmin || isReporter;
 
   React.useEffect(() => {
     if (task) {
@@ -169,7 +177,7 @@ export function TaskDetailModal({
         ) : task ? (
           <div className="space-y-6">
             {/* Header: Trạng thái & Nút xóa */}
-            <div className="flex items-center justify-between border-b border-border/60 pb-4">
+            <div className="flex items-center justify-between border-b border-border/60 pb-4 pr-8">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trạng thái:</span>
                 <Select value={task.status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
@@ -187,15 +195,17 @@ export function TaskDetailModal({
                 </Select>
               </div>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 text-muted-foreground hover:text-destructive cursor-pointer rounded-lg hover:bg-destructive/10"
-                onClick={handleDelete}
-                title="Xóa công việc"
-              >
-                <Trash2Icon className="size-4" />
-              </Button>
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-destructive cursor-pointer rounded-lg hover:bg-destructive/10 mr-2"
+                  onClick={handleDelete}
+                  title="Xóa công việc"
+                >
+                  <Trash2Icon className="size-4" />
+                </Button>
+              )}
             </div>
 
             {/* Tiêu đề Task (Inline Edit) */}

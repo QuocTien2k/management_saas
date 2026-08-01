@@ -45,7 +45,7 @@ export default function ProjectBoardPage() {
     if (!members) return [];
     return members.map((m) => ({
       id: m.user.id,
-      fullname: m.user.fullname,
+      fullname: m.user.fullname || m.user.email,
       email: m.user.email,
       avatar: m.user.avatar,
     }));
@@ -96,6 +96,7 @@ export default function ProjectBoardPage() {
       <TaskDetailModal
         taskId={selectedTaskId}
         projectId={projectId}
+        workspaceId={workspaceId}
         open={detailModalOpen}
         onOpenChange={setDetailModalOpen}
         members={memberOptions}

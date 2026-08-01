@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCreateTask } from '../../hooks/use-tasks';
-import { TaskPriority, TaskStatus } from '../../types/task.types';
+import { MemberOption, TaskPriority, TaskStatus } from '../../types/task.types';
 
 const createTaskSchema = z.object({
   title: z.string().min(1, 'Tiêu đề công việc không được để trống'),
@@ -33,13 +33,6 @@ const createTaskSchema = z.object({
 });
 
 type CreateTaskFormValues = z.infer<typeof createTaskSchema>;
-
-interface MemberOption {
-  id: string;
-  fullname: string;
-  email: string;
-  avatar?: string | null;
-}
 
 interface CreateTaskDialogProps {
   open: boolean;
