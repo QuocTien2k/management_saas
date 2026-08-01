@@ -165,11 +165,11 @@ The core entity. *(Requires `x-workspace-id` header)*.
 
 | Method | Endpoint | Description | Role Required |
 |---|---|---|---|
-| POST | `/projects/:id/tasks` | Create a new task | Member |
+| POST | `/projects/:id/tasks` | Create a new task | Admin, Owner |
 | GET | `/projects/:id/tasks` | Get tasks mapped to columns (Kanban) | Member |
 | GET | `/tasks/:id` | Get detailed task info | Member |
-| PATCH | `/tasks/:id` | Update task (status, priority, assign)| Member |
-| DELETE | `/tasks/:id` | Soft delete task | Member |
+| PATCH | `/tasks/:id` | Update task (Member: status only; Owner/Admin: full) | Member |
+| DELETE | `/tasks/:id` | Soft delete task | Admin, Owner |
 | PATCH | `/tasks/:id/move` | Update task position & column | Member |
 
 ## 5.6 Comment Module

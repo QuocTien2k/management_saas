@@ -10,7 +10,7 @@ interface KanbanBoardProps {
   projectId: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
-  onQuickCreateTask: (status: TaskStatus) => void;
+  onQuickCreateTask?: (status: TaskStatus) => void;
 }
 
 const COLUMNS: { id: TaskStatus; title: string }[] = [

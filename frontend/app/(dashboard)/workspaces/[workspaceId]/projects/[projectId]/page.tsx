@@ -6,6 +6,7 @@ import { Loader2Icon, FolderKanbanIcon } from 'lucide-react';
 
 import { useProjectDetail } from '@/features/project/hooks/use-projects';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
+import { useAuthStore } from '@/features/auth/store/auth-store';
 import { ProjectHeader } from '@/features/project/components/project-header';
 import { useProjectTasks } from '@/features/task/hooks/use-tasks';
 import { useTaskSocket } from '@/features/task/hooks/use-task-socket';
@@ -22,8 +23,16 @@ export default function ProjectBoardPage() {
 
   useTaskSocket(projectId);
 
+  const { user } = useAuthStore();
   const { data: project, isLoading: isProjectLoading } = useProjectDetail(projectId);
   const { data: members } = useWorkspaceMembers(workspaceId);
+
+  const currentMember = React.useMemo(() => {
+    if (!members || !user?.id) return null;
+    return members.find((m) => m.userId === user.id || m.user.id === user.id);
+  }, [members, user?.id]);
+
+  const canCreateTask = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
 
   const [filters, setFilters] = React.useState<TaskFilters>({});
   const { data: tasks, isLoading: isTasksLoading } = useProjectTasks(projectId, filters);
@@ -60,7 +69,7 @@ export default function ProjectBoardPage() {
       <ProjectHeader
         project={project}
         workspaceId={workspaceId}
-        onQuickCreateTask={() => handleQuickCreateTask('TODO')}
+        onQuickCreateTask={canCreateTask ? () => handleQuickCreateTask('TODO') : undefined}
       />
 
       {/* Task Filter Bar */}
@@ -81,7 +90,7 @@ export default function ProjectBoardPage() {
             projectId={projectId}
             tasks={tasks || []}
             onTaskClick={handleTaskClick}
-            onQuickCreateTask={handleQuickCreateTask}
+            onQuickCreateTask={canCreateTask ? handleQuickCreateTask : undefined}
           />
         </div>
       )}

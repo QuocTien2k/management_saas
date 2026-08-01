@@ -64,9 +64,8 @@ export function TaskDetailModal({
   }, [workspaceMembers, user?.id]);
 
   const isOwnerOrAdmin = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
-  const isReporter = Boolean(task?.reporterId && user?.id && task.reporterId === user.id);
-  const canDelete = isOwnerOrAdmin || isReporter;
-  const canEditFull = isOwnerOrAdmin || isReporter;
+  const canDelete = isOwnerOrAdmin;
+  const canEditFull = isOwnerOrAdmin;
 
   React.useEffect(() => {
     if (task) {

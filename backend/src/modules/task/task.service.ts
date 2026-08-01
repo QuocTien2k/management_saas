@@ -92,7 +92,10 @@ export class TaskService {
   // ==========================================
 
   async createTask(userId: string, dto: CreateTaskDto) {
-    const { project } = await this.checkProjectAccess(dto.projectId, userId);
+    const { project } = await this.checkProjectAccess(dto.projectId, userId, [
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+    ]);
 
     const targetIdOrStatus = dto.columnId || (dto.status as string);
 
@@ -292,9 +295,8 @@ export class TaskService {
 
     const isOwnerOrAdmin =
       membership.role === WorkspaceRole.OWNER || membership.role === WorkspaceRole.ADMIN;
-    const isReporter = task.reporterId === userId;
 
-    if (!isOwnerOrAdmin && !isReporter) {
+    if (!isOwnerOrAdmin) {
       const isUpdatingOtherFields =
         (dto.title !== undefined && dto.title !== task.title) ||
         (dto.description !== undefined && dto.description !== task.description) ||
@@ -389,15 +391,10 @@ export class TaskService {
   }
 
   async softDeleteTask(id: string, userId: string) {
-    const { task, project, membership } = await this.checkTaskAccess(id, userId);
-
-    const isOwnerOrAdmin =
-      membership.role === WorkspaceRole.OWNER || membership.role === WorkspaceRole.ADMIN;
-    const isReporter = task.reporterId === userId;
-
-    if (!isOwnerOrAdmin && !isReporter) {
-      throw new ForbiddenException('Bạn không có quyền xóa công việc này.');
-    }
+    const { task, project } = await this.checkTaskAccess(id, userId, [
+      WorkspaceRole.OWNER,
+      WorkspaceRole.ADMIN,
+    ]);
 
     await this.prisma.task.update({
       where: { id },

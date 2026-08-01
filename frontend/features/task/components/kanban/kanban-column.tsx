@@ -12,7 +12,7 @@ interface KanbanColumnProps {
   title: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
-  onQuickCreateTask: (status: TaskStatus) => void;
+  onQuickCreateTask?: (status: TaskStatus) => void;
 }
 
 const columnHeaderColors: Record<TaskStatus, { bg: string; dot: string }> = {
@@ -43,14 +43,16 @@ export function KanbanColumn({
           </span>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-6 text-muted-foreground hover:text-foreground cursor-pointer"
-          onClick={() => onQuickCreateTask(id)}
-        >
-          <PlusIcon className="size-4" />
-        </Button>
+        {onQuickCreateTask && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-6 text-muted-foreground hover:text-foreground cursor-pointer"
+            onClick={() => onQuickCreateTask(id)}
+          >
+            <PlusIcon className="size-4" />
+          </Button>
+        )}
       </div>
 
       {/* Task List (Droppable Zone) */}
@@ -76,14 +78,16 @@ export function KanbanColumn({
             {tasks.length === 0 && !snapshot.isDraggingOver && (
               <div className="flex flex-col items-center justify-center h-28 border border-dashed border-border/60 rounded-lg text-center p-3">
                 <p className="text-[11px] text-muted-foreground">Chưa có công việc nào</p>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="mt-1 text-[11px] text-primary hover:underline cursor-pointer"
-                  onClick={() => onQuickCreateTask(id)}
-                >
-                  + Thêm nhanh
-                </Button>
+                {onQuickCreateTask && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="mt-1 text-[11px] text-primary hover:underline cursor-pointer"
+                    onClick={() => onQuickCreateTask(id)}
+                  >
+                    + Thêm nhanh
+                  </Button>
+                )}
               </div>
             )}
           </div>
