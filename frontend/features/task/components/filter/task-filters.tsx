@@ -15,6 +15,11 @@ interface TaskFiltersProps {
 }
 
 export function TaskFiltersBar({ filters, onFilterChange, members }: TaskFiltersProps) {
+  const selectedMember = React.useMemo(() => {
+    if (!members || !filters.assigneeId || filters.assigneeId === 'ALL') return null;
+    return members.find((m) => m.id === filters.assigneeId);
+  }, [members, filters.assigneeId]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFilterChange({ ...filters, search: e.target.value });
   };
@@ -77,16 +82,30 @@ export function TaskFiltersBar({ filters, onFilterChange, members }: TaskFilters
             onValueChange={(val) => handleAssigneeChange(val as string)}
           >
             <SelectTrigger className="h-8 text-xs w-37.5 bg-background">
-              <SelectValue placeholder="Người thực hiện" />
+              <SelectValue placeholder="Người thực hiện">
+                {selectedMember ? (
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Avatar className="size-4 shrink-0">
+                      <AvatarImage src={selectedMember.avatar || undefined} />
+                      <AvatarFallback className="text-[8px]">
+                        {selectedMember.fullname?.slice(0, 2).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{selectedMember.fullname}</span>
+                  </div>
+                ) : (
+                  !filters.assigneeId || filters.assigneeId === 'ALL' ? 'Tất cả người thực hiện' : undefined
+                )}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Tất cả người làm</SelectItem>
+              <SelectItem value="ALL">Tất cả người thực hiện</SelectItem>
               {members.map((m) => (
                 <SelectItem key={m.id} value={m.id}>
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-4">
+                    <Avatar className="size-4 shrink-0">
                       <AvatarImage src={m.avatar || undefined} />
-                      <AvatarFallback className="text-[8px]">{m.fullname?.slice(0, 2)}</AvatarFallback>
+                      <AvatarFallback className="text-[8px]">{m.fullname?.slice(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span>{m.fullname}</span>
                   </div>

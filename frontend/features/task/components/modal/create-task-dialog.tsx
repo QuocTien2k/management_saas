@@ -123,7 +123,7 @@ export function CreateTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] p-6 gap-6 rounded-2xl">
+      <DialogContent className="sm:max-w-140 p-6 gap-6 rounded-2xl">
         <DialogHeader className="p-0 border-b border-border/60 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">

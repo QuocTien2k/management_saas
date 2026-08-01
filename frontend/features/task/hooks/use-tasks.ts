@@ -7,6 +7,7 @@ export function useProjectTasks(projectId: string, filters?: TaskFilters) {
     queryKey: ['tasks', projectId, filters],
     queryFn: () => taskService.getProjectTasks(projectId, filters),
     enabled: Boolean(projectId),
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -15,6 +16,7 @@ export function useTaskDetail(taskId: string | null) {
     queryKey: ['task', taskId],
     queryFn: () => (taskId ? taskService.getTaskById(taskId) : Promise.reject('No task id')),
     enabled: Boolean(taskId),
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -35,7 +37,14 @@ export function useUpdateTask(projectId: string) {
   return useMutation({
     mutationFn: ({ taskId, data }: { taskId: string; data: UpdateTaskInput }) =>
       taskService.updateTask(taskId, data),
-    onSuccess: (_, variables) => {
+    onSuccess: (updatedTask, variables) => {
+      queryClient.setQueriesData<Task[]>({ queryKey: ['tasks', projectId] }, (oldTasks) => {
+        if (!oldTasks) return [];
+        return oldTasks.map((t) => (t.id === variables.taskId ? { ...t, ...updatedTask } : t));
+      });
+      queryClient.setQueryData<Task>(['task', variables.taskId], (oldTask) => {
+        return oldTask ? { ...oldTask, ...updatedTask } : updatedTask;
+      });
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       queryClient.invalidateQueries({ queryKey: ['task', variables.taskId] });
     },

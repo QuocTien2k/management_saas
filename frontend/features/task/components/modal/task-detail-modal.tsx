@@ -66,6 +66,7 @@ export function TaskDetailModal({
   const isOwnerOrAdmin = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
   const isReporter = Boolean(task?.reporterId && user?.id && task.reporterId === user.id);
   const canDelete = isOwnerOrAdmin || isReporter;
+  const canEditFull = isOwnerOrAdmin || isReporter;
 
   React.useEffect(() => {
     if (task) {
@@ -168,7 +169,7 @@ export function TaskDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[660px] max-h-[88vh] overflow-y-auto p-6 gap-6 rounded-2xl">
+      <DialogContent className="sm:max-w-165 max-h-[88vh] overflow-y-auto p-6 gap-6 rounded-2xl">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground space-y-3">
             <Loader2Icon className="size-8 animate-spin text-primary" />
@@ -181,7 +182,7 @@ export function TaskDetailModal({
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trạng thái:</span>
                 <Select value={task.status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
-                  <SelectTrigger className="h-8 text-xs font-bold w-[150px] bg-background">
+                  <SelectTrigger className="h-8 text-xs font-bold w-37.5 bg-background">
                     <SelectValue>
                       {statusMap[task.status] || 'Cần làm'}
                     </SelectValue>
@@ -210,7 +211,7 @@ export function TaskDetailModal({
 
             {/* Tiêu đề Task (Inline Edit) */}
             <div className="space-y-1">
-              {isEditingTitle ? (
+              {isEditingTitle && canEditFull ? (
                 <div className="flex items-center gap-2">
                   <Input
                     value={title}
@@ -228,11 +229,17 @@ export function TaskDetailModal({
                 </div>
               ) : (
                 <h2
-                  className="text-xl font-bold text-foreground hover:bg-muted/40 p-2 -ml-2 rounded-lg cursor-pointer transition-colors flex items-center justify-between group"
-                  onClick={() => setIsEditingTitle(true)}
+                  className={`text-xl font-bold text-foreground flex items-center justify-between group ${
+                    canEditFull ? 'hover:bg-muted/40 p-2 -ml-2 rounded-lg cursor-pointer transition-colors' : ''
+                  }`}
+                  onClick={() => {
+                    if (canEditFull) setIsEditingTitle(true);
+                  }}
                 >
                   <span>{task.title}</span>
-                  <Edit3Icon className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0" />
+                  {canEditFull && (
+                    <Edit3Icon className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0" />
+                  )}
                 </h2>
               )}
             </div>
@@ -242,7 +249,7 @@ export function TaskDetailModal({
               {/* Priority */}
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">Độ ưu tiên</span>
-                <Select value={task.priority} onValueChange={(v) => handlePriorityChange(v as TaskPriority)}>
+                <Select disabled={!canEditFull} value={task.priority} onValueChange={(v) => handlePriorityChange(v as TaskPriority)}>
                   <SelectTrigger className="h-8 text-xs font-medium bg-background w-full">
                     <SelectValue>
                       {priorityMap[task.priority] || 'Trung bình'}
@@ -261,6 +268,7 @@ export function TaskDetailModal({
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">Người thực hiện</span>
                 <Select
+                  disabled={!canEditFull}
                   value={task.assigneeId || 'UNASSIGNED'}
                   onValueChange={(v) => handleAssigneeChange(v as string)}
                 >
@@ -304,6 +312,7 @@ export function TaskDetailModal({
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">Hạn hoàn thành</span>
                 <Input
+                  disabled={!canEditFull}
                   type="date"
                   value={formattedDueDateInput}
                   onChange={handleDueDateChange}
@@ -316,7 +325,7 @@ export function TaskDetailModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mô tả công việc</span>
-                {!isEditingDesc && (
+                {!isEditingDesc && canEditFull && (
                   <Button
                     variant="ghost"
                     size="xs"
@@ -328,7 +337,7 @@ export function TaskDetailModal({
                 )}
               </div>
 
-              {isEditingDesc ? (
+              {isEditingDesc && canEditFull ? (
                 <div className="space-y-2.5">
                   <Textarea
                     value={description}
@@ -355,11 +364,17 @@ export function TaskDetailModal({
                 </div>
               ) : (
                 <div
-                  className="p-3.5 rounded-xl bg-muted/20 border border-border/50 text-sm leading-relaxed min-h-16 cursor-pointer hover:border-border transition-colors whitespace-pre-wrap text-foreground/90"
-                  onClick={() => setIsEditingDesc(true)}
+                  className={`p-3.5 rounded-xl bg-muted/20 border border-border/50 text-sm leading-relaxed min-h-16 whitespace-pre-wrap text-foreground/90 ${
+                    canEditFull ? 'cursor-pointer hover:border-border transition-colors' : ''
+                  }`}
+                  onClick={() => {
+                    if (canEditFull) setIsEditingDesc(true);
+                  }}
                 >
                   {task.description || (
-                    <span className="text-muted-foreground italic text-xs">Chưa có mô tả chi tiết. Bấm vào đây để thêm...</span>
+                    <span className="text-muted-foreground italic text-xs">
+                      {canEditFull ? 'Chưa có mô tả chi tiết. Bấm vào đây để thêm...' : 'Chưa có mô tả chi tiết.'}
+                    </span>
                   )}
                 </div>
               )}

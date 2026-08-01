@@ -8,6 +8,7 @@ import { useProjectDetail } from '@/features/project/hooks/use-projects';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
 import { ProjectHeader } from '@/features/project/components/project-header';
 import { useProjectTasks } from '@/features/task/hooks/use-tasks';
+import { useTaskSocket } from '@/features/task/hooks/use-task-socket';
 import { KanbanBoard } from '@/features/task/components/kanban/kanban-board';
 import { TaskFiltersBar } from '@/features/task/components/filter/task-filters';
 import { CreateTaskDialog } from '@/features/task/components/modal/create-task-dialog';
@@ -18,6 +19,8 @@ export default function ProjectBoardPage() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
   const projectId = params?.projectId as string;
+
+  useTaskSocket(projectId);
 
   const { data: project, isLoading: isProjectLoading } = useProjectDetail(projectId);
   const { data: members } = useWorkspaceMembers(workspaceId);
