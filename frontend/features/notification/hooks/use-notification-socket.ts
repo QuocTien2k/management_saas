@@ -50,6 +50,16 @@ export function useNotificationSocket() {
       }
     });
 
+    socket.on('notification:read', (data: { id: string }) => {
+      console.log('🔔 Real-time notification read:', data);
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+    });
+
+    socket.on('notification:read_all', (data: { userId: string }) => {
+      console.log('🔔 Real-time all notifications read:', data);
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+    });
+
     socket.on('disconnect', () => {
       console.log('🔌 Notification Socket disconnected');
     });

@@ -51,4 +51,16 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       this.server.to(`user_${userId}`).emit('notification:received', notification);
     }
   }
+
+  sendNotificationReadToUser(userId: string, notificationId: string) {
+    if (this.server) {
+      this.server.to(`user_${userId}`).emit('notification:read', { id: notificationId });
+    }
+  }
+
+  sendAllNotificationsReadToUser(userId: string) {
+    if (this.server) {
+      this.server.to(`user_${userId}`).emit('notification:read_all', { userId });
+    }
+  }
 }

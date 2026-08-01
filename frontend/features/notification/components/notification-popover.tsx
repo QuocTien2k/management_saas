@@ -49,7 +49,12 @@ export function NotificationPopover({ workspaceId }: NotificationPopoverProps) {
     setOpen(false);
 
     if (notification.link) {
-      router.push(notification.link);
+      let targetLink = notification.link;
+      if (targetLink.startsWith('/project/') && (notification.workspaceId || workspaceId)) {
+        const wsId = notification.workspaceId || workspaceId;
+        targetLink = targetLink.replace('/project/', `/workspaces/${wsId}/projects/`);
+      }
+      router.push(targetLink);
     }
   };
 
@@ -84,12 +89,15 @@ export function NotificationPopover({ workspaceId }: NotificationPopoverProps) {
       <PopoverTrigger
         render={
           <button
-            title="Thông báo"
-            className="relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80"
+            title={unreadCount > 0 ? `Bạn có ${unreadCount} thông báo chưa đọc` : 'Thông báo'}
+            className={cn(
+              "relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80",
+              unreadCount > 0 && "border-amber-500/40 bg-amber-500/5 text-amber-600 dark:text-amber-400"
+            )}
           >
-            <BellIcon className="size-4" />
+            <BellIcon className={cn("size-4", unreadCount > 0 && "animate-bell-shake text-amber-600 dark:text-amber-400")} />
             {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs animate-pulse">
+              <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}

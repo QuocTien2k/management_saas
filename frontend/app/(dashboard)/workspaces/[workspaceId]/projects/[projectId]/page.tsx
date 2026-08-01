@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Loader2Icon, FolderKanbanIcon } from 'lucide-react';
 
 import { useProjectDetail } from '@/features/project/hooks/use-projects';
@@ -18,8 +18,10 @@ import { Task, TaskFilters, TaskStatus } from '@/features/task/types/task.types'
 
 export default function ProjectBoardPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const workspaceId = params?.workspaceId as string;
   const projectId = params?.projectId as string;
+  const taskIdParam = searchParams.get('taskId');
 
   useTaskSocket(projectId);
 
@@ -42,6 +44,13 @@ export default function ProjectBoardPage() {
 
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
   const [detailModalOpen, setDetailModalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (taskIdParam) {
+      setSelectedTaskId(taskIdParam);
+      setDetailModalOpen(true);
+    }
+  }, [taskIdParam]);
 
   const handleQuickCreateTask = (status: TaskStatus = 'TODO') => {
     setCreateDefaultStatus(status);

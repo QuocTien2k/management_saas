@@ -174,7 +174,7 @@ export class TaskService {
           task.assigneeId,
           'Bạn đã được phân công công việc mới',
           `Bạn đã được giao công việc "${task.title}" trong dự án "${project.name}".`,
-          `/project/${task.projectId}?taskId=${task.id}`,
+          `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
           project.workspaceId,
         ),
       );
@@ -355,7 +355,7 @@ export class TaskService {
           dto.assigneeId,
           'Bạn đã được phân công công việc mới',
           `Bạn đã được giao công việc "${updatedTask.title}" trong dự án "${project.name}".`,
-          `/project/${updatedTask.projectId}?taskId=${updatedTask.id}`,
+          `/workspaces/${project.workspaceId}/projects/${updatedTask.projectId}?taskId=${updatedTask.id}`,
           project.workspaceId,
         ),
       );
@@ -846,7 +846,7 @@ export class TaskService {
           task.assigneeId,
           'Có bình luận mới trong công việc',
           `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
-          `/project/${task.projectId}?taskId=${task.id}`,
+          `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
           project.workspaceId,
         ),
       );
@@ -860,7 +860,7 @@ export class TaskService {
           task.reporterId,
           'Có bình luận mới trong công việc',
           `Người dùng ${comment.user.fullname} đã bình luận trong công việc "${task.title}": "${dto.content.substring(0, 50)}..."`,
-          `/project/${task.projectId}?taskId=${task.id}`,
+          `/workspaces/${project.workspaceId}/projects/${task.projectId}?taskId=${task.id}`,
           project.workspaceId,
         ),
       );

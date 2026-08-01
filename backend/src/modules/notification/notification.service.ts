@@ -83,10 +83,13 @@ export class NotificationService {
       throw new NotFoundException('Thông báo không tồn tại hoặc không thuộc quyền sở hữu của bạn.');
     }
 
-    return this.prisma.notification.update({
+    const updated = await this.prisma.notification.update({
       where: { id },
       data: { isRead: true },
     });
+
+    this.gateway.sendNotificationReadToUser(userId, id);
+    return updated;
   }
 
   async markAllAsRead(userId: string, workspaceId?: string) {
@@ -100,6 +103,7 @@ export class NotificationService {
       data: { isRead: true },
     });
 
+    this.gateway.sendAllNotificationsReadToUser(userId);
     return { message: 'Đã đánh dấu đọc tất cả thông báo thành công.' };
   }
 
