@@ -338,7 +338,15 @@ export class TaskService {
   }
 
   async softDeleteTask(id: string, userId: string) {
-    const { task, project } = await this.checkTaskAccess(id, userId);
+    const { task, project, membership } = await this.checkTaskAccess(id, userId);
+
+    const isOwnerOrAdmin =
+      membership.role === WorkspaceRole.OWNER || membership.role === WorkspaceRole.ADMIN;
+    const isReporter = task.reporterId === userId;
+
+    if (!isOwnerOrAdmin && !isReporter) {
+      throw new ForbiddenException('Bạn không có quyền xóa công việc này.');
+    }
 
     await this.prisma.task.update({
       where: { id },
