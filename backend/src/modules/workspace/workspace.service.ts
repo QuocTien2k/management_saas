@@ -96,6 +96,20 @@ export class WorkspaceService {
             logo: true,
             description: true,
             createdAt: true,
+            _count: {
+              select: {
+                members: {
+                  where: {
+                    status: MemberStatus.ACTIVE,
+                  },
+                },
+                projects: {
+                  where: {
+                    deletedAt: null,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -126,6 +140,11 @@ export class WorkspaceService {
                 status: MemberStatus.ACTIVE,
               },
             },
+            projects: {
+              where: {
+                deletedAt: null,
+              },
+            },
           },
         },
       },
@@ -146,6 +165,10 @@ export class WorkspaceService {
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
       memberCount: workspace._count.members,
+      _count: {
+        members: workspace._count.members,
+        projects: workspace._count.projects,
+      },
     };
   }
 
