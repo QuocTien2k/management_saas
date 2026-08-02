@@ -1,79 +1,55 @@
 'use client';
 
 import * as React from 'react';
-import { SunIcon, MoonIcon, LaptopIcon } from 'lucide-react';
+import { SunIcon, MoonIcon } from 'lucide-react';
 import { useTheme } from '@/providers/theme-provider';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
   if (!mounted) {
     return (
       <button
         aria-label="Toggle theme"
-        className="relative flex size-9 items-center justify-center rounded-xl border border-border bg-background/80 text-muted-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80"
+        className="relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 text-muted-foreground backdrop-blur-md transition-all cursor-pointer hover:bg-accent hover:text-foreground"
       >
         <SunIcon className="size-4" />
       </button>
     );
   }
 
+  const isDark = resolvedTheme === 'dark';
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button
-            aria-label="Toggle theme"
-            className="relative flex size-9 items-center justify-center rounded-xl border border-border bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-colors cursor-pointer dark:bg-card/80"
-          >
-            {resolvedTheme === 'dark' ? (
-              <MoonIcon className="size-4 text-blue-400 transition-all duration-200" />
-            ) : (
-              <SunIcon className="size-4 text-amber-500 transition-all duration-200" />
-            )}
-          </button>
-        }
+    <button
+      onClick={toggleTheme}
+      aria-label="Toggle theme"
+      title={isDark ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối'}
+      className="relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur-md transition-all duration-200 cursor-pointer hover:bg-accent dark:bg-card/80 dark:hover:bg-accent/80 overflow-hidden group shadow-xs"
+    >
+      <SunIcon
+        className={`size-4 text-amber-500 absolute transition-all duration-500 ease-in-out transform ${
+          isDark
+            ? 'rotate-90 scale-0 opacity-0'
+            : 'rotate-0 scale-100 opacity-100 group-hover:rotate-45'
+        }`}
       />
-      <DropdownMenuContent align="end" className="w-36 backdrop-blur-md bg-popover/90 border border-border/80">
-        <DropdownMenuItem
-          onClick={() => setTheme('light')}
-          className={`flex items-center gap-2 cursor-pointer ${
-            theme === 'light' ? 'font-semibold text-primary' : ''
-          }`}
-        >
-          <SunIcon className="size-4 text-amber-500" />
-          <span>Sáng (Light)</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme('dark')}
-          className={`flex items-center gap-2 cursor-pointer ${
-            theme === 'dark' ? 'font-semibold text-primary' : ''
-          }`}
-        >
-          <MoonIcon className="size-4 text-blue-400" />
-          <span>Tối (Dark)</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => setTheme('system')}
-          className={`flex items-center gap-2 cursor-pointer ${
-            theme === 'system' ? 'font-semibold text-primary' : ''
-          }`}
-        >
-          <LaptopIcon className="size-4 text-muted-foreground" />
-          <span>Hệ thống</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <MoonIcon
+        className={`size-4 text-blue-400 absolute transition-all duration-500 ease-in-out transform ${
+          isDark
+            ? 'rotate-0 scale-100 opacity-100 group-hover:-rotate-12'
+            : '-rotate-90 scale-0 opacity-0'
+        }`}
+      />
+    </button>
   );
 }

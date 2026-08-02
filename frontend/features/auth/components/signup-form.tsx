@@ -73,18 +73,18 @@ export default function SignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-2xl text-slate-100 relative overflow-hidden">
+    <Card className="w-full max-w-md border-border/80 bg-card/80 backdrop-blur-md shadow-xl text-card-foreground relative overflow-hidden">
       {isLoading && <Loading variant="scope" text="Đang đăng ký tài khoản..." />}
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight text-white">Đăng ký tài khoản</CardTitle>
-        <CardDescription className="text-slate-400">
+        <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Đăng ký tài khoản</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Tạo tài khoản mới để bắt đầu quản lý dự án
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullname" className="text-slate-200">Họ và tên</Label>
+            <Label htmlFor="fullname" className="text-foreground font-medium">Họ và tên</Label>
             <Input
               id="fullname"
               type="text"
@@ -96,7 +96,7 @@ export default function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-200">Email</Label>
+            <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
             <Input
               id="email"
               type="email"
@@ -108,7 +108,7 @@ export default function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-slate-200">Mật khẩu</Label>
+            <Label htmlFor="password" className="text-foreground font-medium">Mật khẩu</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -120,7 +120,7 @@ export default function SignupForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
+                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -129,7 +129,7 @@ export default function SignupForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-slate-200">Xác nhận mật khẩu</Label>
+            <Label htmlFor="confirmPassword" className="text-foreground font-medium">Xác nhận mật khẩu</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -141,7 +141,7 @@ export default function SignupForm() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
+                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -152,19 +152,19 @@ export default function SignupForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 transition-all cursor-pointer flex items-center justify-center gap-2 rounded-xl shadow-xs"
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Đăng ký tài khoản
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="text-center justify-center border-t bg-slate-800/80 border-slate-700 py-4">
-        <p className="text-sm text-slate-400">
+      <CardFooter className="text-center justify-center border-t bg-muted/30 border-border/70 py-4">
+        <p className="text-sm text-muted-foreground">
           Đã có tài khoản?{' '}
           <Link
             href="/login"
-            className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+            className="font-semibold text-primary hover:underline transition-colors"
           >
             Đăng nhập ngay
           </Link>

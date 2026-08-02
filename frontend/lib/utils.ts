@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getAuthInputClass(hasError: boolean, extraClasses?: string) {
   return cn(
-    "bg-slate-950/60 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500 focus:border-blue-500",
-    hasError && "border-rose-500 focus:ring-rose-500",
+    "bg-background/80 border-input text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-all",
+    hasError && "border-destructive focus-visible:ring-destructive",
     extraClasses
   );
 }

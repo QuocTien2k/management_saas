@@ -128,7 +128,7 @@ export default function LoginForm() {
   }, []);
 
   return (
-    <Card className="w-full max-w-md border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-2xl text-slate-100 relative overflow-hidden">
+    <Card className="w-full max-w-md border-border/80 bg-card/80 backdrop-blur-md shadow-xl text-card-foreground relative overflow-hidden">
       {(isLoading || isGoogleLoading) && (
         <Loading
           variant="scope"
@@ -136,15 +136,15 @@ export default function LoginForm() {
         />
       )}
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight text-white">Đăng nhập</CardTitle>
-        <CardDescription className="text-slate-400">
+        <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Đăng nhập</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Nhập tài khoản của bạn để truy cập hệ thống
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-200">Email</Label>
+            <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
             <Input
               id="email"
               type="email"
@@ -157,10 +157,10 @@ export default function LoginForm() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-slate-200">Mật khẩu</Label>
+              <Label htmlFor="password" className="text-foreground font-medium">Mật khẩu</Label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-xs text-primary hover:underline transition-colors font-medium"
               >
                 Quên mật khẩu?
               </Link>
@@ -176,7 +176,7 @@ export default function LoginForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
+                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -187,7 +187,7 @@ export default function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 transition-all cursor-pointer flex items-center justify-center gap-2 rounded-xl shadow-xs"
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Đăng nhập
@@ -195,15 +195,15 @@ export default function LoginForm() {
         </form>
 
         <div className="relative flex py-2 items-center">
-          <div className="grow border-t border-slate-800"></div>
-          <span className="shrink mx-4 text-slate-500 text-xs uppercase font-medium">Hoặc tiếp tục với</span>
-          <div className="grow border-t border-slate-800"></div>
+          <div className="grow border-t border-border/70"></div>
+          <span className="shrink mx-4 text-muted-foreground text-xs uppercase font-medium">Hoặc tiếp tục với</span>
+          <div className="grow border-t border-border/70"></div>
         </div>
 
         <div className="flex flex-col items-center justify-center min-h-11">
           {isGoogleLoading ? (
-            <div className="flex items-center gap-2 text-slate-400 text-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
               Đang xác thực Google...
             </div>
           ) : (
@@ -211,12 +211,12 @@ export default function LoginForm() {
           )}
         </div>
       </CardContent>
-      <CardFooter className="text-center justify-center border-t bg-slate-800/80 border-slate-700 py-4">
-        <p className="text-sm text-slate-400">
+      <CardFooter className="text-center justify-center border-t bg-muted/30 border-border/70 py-4">
+        <p className="text-sm text-muted-foreground">
           Chưa có tài khoản?{' '}
           <Link
             href="/signup"
-            className="font-medium text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+            className="font-semibold text-primary hover:underline transition-colors"
           >
             Đăng ký ngay
           </Link>
