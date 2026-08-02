@@ -18,11 +18,15 @@ export interface MemberOption {
 
 export interface TaskAttachment {
   id: string;
-  filename: string;
-  fileUrl: string;
+  filename?: string;
+  fileName?: string;
+  fileUrl?: string;
+  publicUrl?: string;
   fileSize: number;
-  fileType: string;
-  uploadedAt: string;
+  fileType?: string;
+  mimeType?: string;
+  uploadedAt?: string;
+  createdAt?: string;
   uploadedById?: string;
 }
 
@@ -66,6 +70,7 @@ export interface CreateTaskInput {
   priority?: TaskPriority;
   dueDate?: string;
   assigneeId?: string;
+  attachments?: TaskAttachment[];
 }
 
 export interface UpdateTaskInput {
@@ -75,6 +80,7 @@ export interface UpdateTaskInput {
   priority?: TaskPriority;
   dueDate?: string | null;
   assigneeId?: string | null;
+  attachments?: TaskAttachment[];
 }
 
 export interface MoveTaskInput {

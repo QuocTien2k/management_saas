@@ -157,10 +157,29 @@ export class TaskService {
         columnId: targetColumnId,
         reporterId: userId,
         assigneeId: dto.assigneeId || null,
+        attachments:
+          dto.attachments && dto.attachments.length > 0
+            ? {
+                create: dto.attachments.map((att) => ({
+                  fileName: att.fileName || att.filename || 'unnamed_file',
+                  fileSize: att.fileSize || 0,
+                  mimeType: att.mimeType || att.fileType || 'application/octet-stream',
+                  storagePath: att.storagePath || att.publicUrl || att.fileUrl || '',
+                  publicUrl: att.publicUrl || att.fileUrl || '',
+                  uploadedById: userId,
+                })),
+              }
+            : undefined,
       },
       include: {
         assignee: { select: { id: true, fullname: true, email: true, avatar: true } },
         reporter: { select: { id: true, fullname: true, email: true, avatar: true } },
+        attachments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            uploadedBy: { select: { id: true, fullname: true } },
+          },
+        },
       },
     });
 
@@ -244,6 +263,7 @@ export class TaskService {
           select: {
             comments: true,
             checklists: true,
+            attachments: true,
           },
         },
       },
@@ -335,11 +355,53 @@ export class TaskService {
       }
     }
 
+    if (dto.attachments !== undefined) {
+      const existingAttachments = await this.prisma.attachment.findMany({
+        where: { taskId: id },
+      });
+      const existingIds = new Set(existingAttachments.map((a) => a.id));
+      const keepIds = new Set<string>();
+
+      for (const att of dto.attachments) {
+        if (att.id && existingIds.has(att.id)) {
+          keepIds.add(att.id);
+        } else {
+          await this.prisma.attachment.create({
+            data: {
+              fileName: att.fileName || att.filename || 'unnamed_file',
+              fileSize: att.fileSize || 0,
+              mimeType: att.mimeType || att.fileType || 'application/octet-stream',
+              storagePath: att.storagePath || att.publicUrl || att.fileUrl || '',
+              publicUrl: att.publicUrl || att.fileUrl || '',
+              taskId: id,
+              uploadedById: userId,
+            },
+          });
+        }
+      }
+
+      const deleteIds = existingAttachments
+        .filter((a) => !keepIds.has(a.id))
+        .map((a) => a.id);
+
+      if (deleteIds.length > 0) {
+        await this.prisma.attachment.deleteMany({
+          where: { id: { in: deleteIds } },
+        });
+      }
+    }
+
     const updatedTask = await this.prisma.task.update({
       where: { id },
       data,
       include: {
         assignee: { select: { id: true, fullname: true, avatar: true } },
+        attachments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            uploadedBy: { select: { id: true, fullname: true } },
+          },
+        },
       },
     });
 
@@ -961,21 +1023,24 @@ export class TaskService {
 
   // Attachments
   async createAttachment(taskId: string, userId: string, metadata: {
-    fileName: string;
-    fileSize: number;
-    mimeType: string;
-    storagePath: string;
-    publicUrl: string;
+    fileName?: string;
+    filename?: string;
+    fileSize?: number;
+    mimeType?: string;
+    fileType?: string;
+    storagePath?: string;
+    publicUrl?: string;
+    fileUrl?: string;
   }) {
     const { task } = await this.checkTaskAccess(taskId, userId);
 
     const attachment = await this.prisma.attachment.create({
       data: {
-        fileName: metadata.fileName,
-        fileSize: metadata.fileSize,
-        mimeType: metadata.mimeType,
-        storagePath: metadata.storagePath,
-        publicUrl: metadata.publicUrl,
+        fileName: metadata.fileName || metadata.filename || 'unnamed_file',
+        fileSize: metadata.fileSize || 0,
+        mimeType: metadata.mimeType || metadata.fileType || 'application/octet-stream',
+        storagePath: metadata.storagePath || metadata.publicUrl || metadata.fileUrl || '',
+        publicUrl: metadata.publicUrl || metadata.fileUrl || '',
         taskId,
         uploadedById: userId,
       },

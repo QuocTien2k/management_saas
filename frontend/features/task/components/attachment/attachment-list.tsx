@@ -156,32 +156,37 @@ export function AttachmentList({
       {/* Attachments List */}
       {attachments.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          {attachments.map((file) => (
-            <div
-              key={file.id}
-              className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border/70 hover:border-border transition-colors group shadow-xs"
-            >
-              <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
-                  {getFileIcon(file.fileType)}
-                </div>
-                <div className="flex flex-col truncate">
-                  <span className="text-xs font-medium text-foreground truncate">{file.filename}</span>
-                  <span className="text-[10px] text-muted-foreground">{formatFileSize(file.fileSize)}</span>
-                </div>
-              </div>
+          {attachments.map((file) => {
+            const name = file.fileName || file.filename || 'Tệp đính kèm';
+            const type = file.mimeType || file.fileType || 'application/octet-stream';
+            const url = file.publicUrl || file.fileUrl || '#';
 
-              <div className="flex items-center gap-1 shrink-0">
-                <a
-                  href={file.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  title="Tải về"
-                >
-                  <DownloadIcon className="size-4" />
-                </a>
+            return (
+              <div
+                key={file.id}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border/70 hover:border-border transition-colors group shadow-xs"
+              >
+                <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                  <div className="size-9 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+                    {getFileIcon(type)}
+                  </div>
+                  <div className="flex flex-col truncate">
+                    <span className="text-xs font-medium text-foreground truncate">{name}</span>
+                    <span className="text-[10px] text-muted-foreground">{formatFileSize(file.fileSize)}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    title="Tải về"
+                  >
+                    <DownloadIcon className="size-4" />
+                  </a>
 
                 {canEdit && (
                   <Button
@@ -201,7 +206,8 @@ export function AttachmentList({
                 )}
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       ) : null}
     </div>

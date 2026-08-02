@@ -21,7 +21,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCreateTask } from '../../hooks/use-tasks';
-import { MemberOption, TaskPriority, TaskStatus } from '../../types/task.types';
+import { AttachmentList } from '../attachment/attachment-list';
+import { MemberOption, TaskPriority, TaskStatus, TaskAttachment } from '../../types/task.types';
 
 const createTaskSchema = z.object({
   title: z.string().min(1, 'Tiêu đề công việc không được để trống'),
@@ -64,6 +65,7 @@ export function CreateTaskDialog({
   members,
 }: CreateTaskDialogProps) {
   const createTask = useCreateTask(projectId);
+  const [attachments, setAttachments] = React.useState<TaskAttachment[]>([]);
 
   const {
     register,
@@ -85,6 +87,7 @@ export function CreateTaskDialog({
 
   React.useEffect(() => {
     if (open) {
+      setAttachments([]);
       reset({
         title: '',
         description: '',
@@ -113,7 +116,9 @@ export function CreateTaskDialog({
         priority: data.priority,
         dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
         assigneeId: data.assigneeId === 'UNASSIGNED' ? undefined : data.assigneeId,
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
+      setAttachments([]);
       reset();
       onOpenChange(false);
     } catch (err) {
@@ -265,6 +270,32 @@ export function CreateTaskDialog({
               placeholder="Nhập yêu cầu chi tiết hoặc thông tin công việc..."
               className="text-sm p-3 resize-none bg-background"
               {...register('description')}
+            />
+          </div>
+
+          {/* Tệp đính kèm */}
+          <div className="space-y-2 pt-2 border-t border-border/60">
+            <AttachmentList
+              taskId=""
+              attachments={attachments}
+              canEdit={true}
+              onUpload={async (files) => {
+                const newAttachments = Array.from(files).map((f, idx) => ({
+                  id: Date.now().toString() + idx,
+                  filename: f.name,
+                  fileName: f.name,
+                  fileUrl: URL.createObjectURL(f),
+                  publicUrl: URL.createObjectURL(f),
+                  fileSize: f.size,
+                  fileType: f.type || 'application/octet-stream',
+                  mimeType: f.type || 'application/octet-stream',
+                  uploadedAt: new Date().toISOString(),
+                }));
+                setAttachments((prev) => [...prev, ...newAttachments]);
+              }}
+              onDelete={async (attachmentId) => {
+                setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+              }}
             />
           </div>
 

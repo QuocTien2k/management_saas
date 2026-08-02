@@ -17,6 +17,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { MoveTaskDto } from './dto/move-task.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateLabelDto } from './dto/create-label.dto';
+import { TaskAttachmentInputDto } from './dto/task-attachment.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { TaskStatus, TaskPriority } from '@prisma/client';
@@ -252,15 +253,9 @@ export class TaskController {
   async createAttachment(
     @Param('taskId') taskId: string,
     @CurrentUser() user: User,
-    @Body() metadata: {
-      fileName: string;
-      fileSize: number;
-      mimeType: string;
-      storagePath: string;
-      publicUrl: string;
-    },
+    @Body() dto: TaskAttachmentInputDto,
   ) {
-    return this.taskService.createAttachment(taskId, user.id, metadata);
+    return this.taskService.createAttachment(taskId, user.id, dto);
   }
 
   @Delete('attachments/:id')

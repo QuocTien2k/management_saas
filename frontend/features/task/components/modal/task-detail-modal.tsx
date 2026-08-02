@@ -392,9 +392,12 @@ export function TaskDetailModal({
                 const newAttachments = Array.from(files).map((f, idx) => ({
                   id: Date.now().toString() + idx,
                   filename: f.name,
+                  fileName: f.name,
                   fileUrl: URL.createObjectURL(f),
+                  publicUrl: URL.createObjectURL(f),
                   fileSize: f.size,
                   fileType: f.type || 'application/octet-stream',
+                  mimeType: f.type || 'application/octet-stream',
                   uploadedAt: new Date().toISOString(),
                 }));
                 const existing = task.attachments || [];
