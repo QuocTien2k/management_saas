@@ -16,6 +16,28 @@ export interface MemberOption {
   avatar?: string | null;
 }
 
+export interface TaskAttachment {
+  id: string;
+  filename: string;
+  fileUrl: string;
+  fileSize: number;
+  fileType: string;
+  uploadedAt: string;
+  uploadedById?: string;
+}
+
+export interface TaskLabel {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -30,8 +52,13 @@ export interface Task {
   reporterId: string;
   createdAt: string;
   updatedAt: string;
+  attachments?: TaskAttachment[];
+  labels?: TaskLabel[];
+  checklist?: ChecklistItem[];
   _count?: {
     comments?: number;
+    attachments?: number;
+    checklist?: number;
   };
 }
 

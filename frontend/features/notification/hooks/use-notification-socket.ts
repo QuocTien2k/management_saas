@@ -79,6 +79,46 @@ export function useNotificationSocket() {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
     });
 
+    // Lắng nghe sự kiện real-time liên quan đến task & project
+    socket.on('task:created', (data: { projectId: string }) => {
+      console.log('⚡ Real-time task:created', data);
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['tasks', data.projectId] });
+      }
+    });
+
+    socket.on('task:updated', (data: { projectId: string; taskId: string }) => {
+      console.log('⚡ Real-time task:updated', data);
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['tasks', data.projectId] });
+      }
+      if (data?.taskId) {
+        queryClient.invalidateQueries({ queryKey: ['task', data.taskId] });
+      }
+    });
+
+    socket.on('task:moved', (data: { projectId: string; taskId: string }) => {
+      console.log('⚡ Real-time task:moved', data);
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['tasks', data.projectId] });
+      }
+    });
+
+    socket.on('task:deleted', (data: { projectId: string; taskId: string }) => {
+      console.log('⚡ Real-time task:deleted', data);
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['tasks', data.projectId] });
+      }
+    });
+
+    socket.on('comment:created', (data: { taskId: string }) => {
+      console.log('⚡ Real-time comment:created', data);
+      if (data?.taskId) {
+        queryClient.invalidateQueries({ queryKey: ['comments', data.taskId] });
+        queryClient.invalidateQueries({ queryKey: ['task', data.taskId] });
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log('🔌 Notification Socket disconnected');
     });

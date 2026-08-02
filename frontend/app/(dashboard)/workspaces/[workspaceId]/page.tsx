@@ -21,12 +21,15 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProjectCard } from '@/features/project/components/project-card';
+import { TaskStatusChart } from '@/features/dashboard/components/task-status-chart';
+import { ProductivityChart } from '@/features/dashboard/components/productivity-chart';
+import { RecentActivityFeed } from '@/features/dashboard/components/recent-activity-feed';
 
 export default function WorkspaceDashboardPage() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
 
-  const { data: workspace, isLoading: isWsLoading } = useWorkspaceDetail(workspaceId);
+  const { data: workspace } = useWorkspaceDetail(workspaceId);
   const { data: members } = useWorkspaceMembers(workspaceId);
   const { data: projects } = useProjects(workspaceId);
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
@@ -36,17 +39,29 @@ export default function WorkspaceDashboardPage() {
       {/* Header Info */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/70 pb-5">
         <div className="flex items-center gap-4">
-          {workspace && <WorkspaceAvatar name={workspace.name} logo={workspace.logo} logoUrl={workspace.logoUrl} size="lg" />}
+          {workspace && (
+            <WorkspaceAvatar
+              name={workspace.name}
+              logo={workspace.logo}
+              logoUrl={workspace.logoUrl}
+              size="lg"
+            />
+          )}
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">{workspace?.name || 'Workspace'}</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {workspace?.description || 'Tổng quan công việc và dự án trong nhóm của bạn.'}
+              {workspace?.description || 'Tổng quan công việc và tiến độ dự án trong nhóm của bạn.'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5">
-          <Button onClick={() => setInviteDialogOpen(true)} variant="outline" size="sm" className="gap-2 shadow-xs cursor-pointer">
+          <Button
+            onClick={() => setInviteDialogOpen(true)}
+            variant="outline"
+            size="sm"
+            className="gap-2 shadow-xs cursor-pointer"
+          >
             <UserPlusIcon className="size-4 text-muted-foreground" />
             Mời thành viên
           </Button>
@@ -95,7 +110,7 @@ export default function WorkspaceDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">0</div>
+            <div className="text-2xl font-bold tracking-tight">12</div>
             <p className="text-[11px] text-muted-foreground mt-1">Trong tuần này</p>
           </CardContent>
         </Card>
@@ -108,13 +123,19 @@ export default function WorkspaceDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">0</div>
+            <div className="text-2xl font-bold tracking-tight">2</div>
             <p className="text-[11px] text-muted-foreground mt-1">Cần xử lý gấp</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Member summary & Recent Activity preview */}
+      {/* Analytics Charts Section */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <TaskStatusChart todoCount={5} inProgressCount={8} inReviewCount={3} doneCount={12} />
+        <ProductivityChart />
+      </div>
+
+      {/* Recent Projects & Activity Feed */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2 shadow-xs border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -147,40 +168,8 @@ export default function WorkspaceDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-xs border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <div>
-              <CardTitle className="text-base font-semibold">Thành viên nhóm</CardTitle>
-              <CardDescription className="text-xs">{members?.length || 1} thành viên</CardDescription>
-            </div>
-            <Link href={`/workspaces/${workspaceId}/members`}>
-              <Button size="xs" variant="ghost" className="text-xs">Xem tất cả</Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="p-5 pt-1">
-            <div className="space-y-3">
-              {members?.slice(0, 5).map((m) => (
-                <div key={m.id} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-muted/40 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar className="size-7.5 border border-border/60">
-                      {m.user.avatar && <AvatarImage src={m.user.avatar} />}
-                      <AvatarFallback className="text-[11px]">
-                        {(m.user.fullname || m.user.email).substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-foreground">{m.user.fullname || 'Thành viên'}</span>
-                      <span className="text-[10px] text-muted-foreground">{m.user.email}</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                    {m.role}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Activity Feed */}
+        <RecentActivityFeed />
       </div>
 
       <InviteMemberDialog workspaceId={workspaceId} open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />

@@ -6,6 +6,7 @@ export interface Project {
   key: string;
   description?: string | null;
   status: ProjectStatus;
+  color?: string;
   workspaceId: string;
   createdAt: string;
   updatedAt: string;
@@ -19,6 +20,7 @@ export interface CreateProjectInput {
   key: string;
   description?: string;
   status?: ProjectStatus;
+  color?: string;
   workspaceId?: string;
 }
 
@@ -27,4 +29,5 @@ export interface UpdateProjectInput {
   key?: string;
   description?: string;
   status?: ProjectStatus;
+  color?: string;
 }

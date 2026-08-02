@@ -12,7 +12,7 @@ export const MEMBER_KEYS = {
 };
 
 // Hook lấy danh sách thành viên của workspace
-export function useWorkspaceMembers(workspaceId: string | null) {
+export function useWorkspaceMembers(workspaceId?: string | null) {
   return useQuery({
     queryKey: MEMBER_KEYS.list(workspaceId || ''),
     queryFn: () => memberService.getMembers(workspaceId!),

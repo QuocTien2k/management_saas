@@ -1,23 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import { MessageSquareIcon, SendIcon, Loader2Icon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { MessageSquareIcon, Loader2Icon } from 'lucide-react';
 import { useTaskComments, useCreateComment } from '../hooks/use-comments';
 import { CommentItem } from './comment-item';
 
+import { MentionInput } from './mention-input';
+
 interface CommentSectionProps {
   taskId: string;
+  workspaceId?: string;
 }
 
-export function CommentSection({ taskId }: CommentSectionProps) {
+export function CommentSection({ taskId, workspaceId }: CommentSectionProps) {
   const [newComment, setNewComment] = React.useState('');
   const { data: comments, isLoading } = useTaskComments(taskId);
   const createComment = useCreateComment(taskId);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!newComment.trim()) return;
 
     try {
@@ -35,30 +35,14 @@ export function CommentSection({ taskId }: CommentSectionProps) {
         Bình luận ({comments?.length || 0})
       </div>
 
-      {/* Form tạo comment */}
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <Textarea
-          placeholder="Viết bình luận hoặc trao đổi thông tin..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="text-xs min-h-[70px] resize-none"
-        />
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!newComment.trim() || createComment.isPending}
-            className="gap-1.5 text-xs shadow-xs cursor-pointer"
-          >
-            {createComment.isPending ? (
-              <Loader2Icon className="size-3.5 animate-spin" />
-            ) : (
-              <SendIcon className="size-3.5" />
-            )}
-            Gửi bình luận
-          </Button>
-        </div>
-      </form>
+      {/* Form tạo comment với @mention */}
+      <MentionInput
+        workspaceId={workspaceId}
+        value={newComment}
+        onChange={setNewComment}
+        onSubmit={handleSubmit}
+        isSubmitting={createComment.isPending}
+      />
 
       {/* Danh sách comment */}
       <div className="space-y-3 pt-2">

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import { CalendarIcon, MessageSquareIcon, AlertCircleIcon, ArrowUpIcon, ArrowDownIcon, MinusIcon } from 'lucide-react';
+import { CalendarIcon, MessageSquareIcon, AlertCircleIcon, ArrowUpIcon, ArrowDownIcon, MinusIcon, CheckSquareIcon, PaperclipIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +47,9 @@ export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
       })
     : null;
 
+  const totalChecklist = task.checklist?.length || task._count?.checklist || 0;
+  const completedChecklist = task.checklist?.filter((i) => i.isCompleted).length || 0;
+
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -63,12 +66,30 @@ export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
             }`}
           >
             <CardContent className="p-3 space-y-2.5">
-              {/* Priority badge */}
-              <div className="flex items-center justify-between gap-2">
+              {/* Labels & Priority */}
+              <div className="flex items-center justify-between gap-1.5 flex-wrap">
                 <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold border ${priority.bg}`}>
                   {priority.icon}
                   {priority.label}
                 </span>
+
+                {task.labels && task.labels.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    {task.labels.slice(0, 2).map((l) => (
+                      <span
+                        key={l.id}
+                        className="text-[9px] font-semibold px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary border border-primary/20"
+                      >
+                        {l.name}
+                      </span>
+                    ))}
+                    {task.labels.length > 2 && (
+                      <span className="text-[9px] font-semibold text-muted-foreground">
+                        +{task.labels.length - 2}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Title */}
@@ -76,13 +97,29 @@ export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
                 {task.title}
               </h4>
 
-              {/* Footer info: Due date, comment count, Assignee */}
+              {/* Footer info: Due date, checklist, attachments, comment count, Assignee */}
               <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 flex-wrap">
                   {formattedDueDate && (
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <CalendarIcon className="size-3 text-muted-foreground" />
                       <span>{formattedDueDate}</span>
+                    </div>
+                  )}
+
+                  {totalChecklist > 0 && (
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <CheckSquareIcon className="size-3 text-muted-foreground" />
+                      <span>
+                        {completedChecklist}/{totalChecklist}
+                      </span>
+                    </div>
+                  )}
+
+                  {Boolean(task.attachments?.length || task._count?.attachments) && (
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <PaperclipIcon className="size-3 text-muted-foreground" />
+                      <span>{task.attachments?.length || task._count?.attachments}</span>
                     </div>
                   )}
 

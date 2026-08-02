@@ -22,6 +22,7 @@ import { useLogout } from '@/features/auth/hooks/use-logout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { NotificationPopover } from '@/features/notification/components/notification-popover';
+import { CommandMenu } from '@/components/navigation/command-menu';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -236,8 +237,9 @@ export default function WorkspaceLayout({
               {workspace?.name || 'Workspace'}
             </h2>
           </div>
-
           <div className="flex items-center gap-3">
+            <CommandMenu workspaceId={workspaceId} />
+
             <ThemeToggle />
 
             <NotificationPopover workspaceId={workspaceId} />

@@ -15,6 +15,9 @@ import { MemberOption, TaskPriority, TaskStatus } from '../../types/task.types';
 import { useUpdateTask, useDeleteTask, useTaskDetail } from '../../hooks/use-tasks';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
 import { useAuthStore } from '@/features/auth/store/auth-store';
+import { TaskLabels } from '../label/task-labels';
+import { TaskChecklist } from '../checklist/task-checklist';
+import { AttachmentList } from '../attachment/attachment-list';
 
 interface TaskDetailModalProps {
   taskId: string | null;
@@ -379,8 +382,63 @@ export function TaskDetailModal({
               )}
             </div>
 
+            {/* Task Labels & Attributes */}
+            <TaskLabels
+              labels={task.labels}
+              canEdit={canEditFull}
+              onUpdateLabels={async (newLabels) => {
+                await updateTask.mutateAsync({
+                  taskId,
+                  data: { labels: newLabels } as any,
+                });
+              }}
+            />
+
+            {/* Task Checklist */}
+            <TaskChecklist
+              items={task.checklist}
+              canEdit={canEditFull}
+              onUpdateChecklist={async (newChecklist) => {
+                await updateTask.mutateAsync({
+                  taskId,
+                  data: { checklist: newChecklist } as any,
+                });
+              }}
+            />
+
+            {/* Attachments */}
+            <AttachmentList
+              taskId={task.id}
+              attachments={task.attachments}
+              canEdit={canEditFull}
+              onUpload={async (files) => {
+                // Upload handler demo/integration
+                const newAttachments = Array.from(files).map((f, idx) => ({
+                  id: Date.now().toString() + idx,
+                  filename: f.name,
+                  fileUrl: URL.createObjectURL(f),
+                  fileSize: f.size,
+                  fileType: f.type || 'application/octet-stream',
+                  uploadedAt: new Date().toISOString(),
+                }));
+                const existing = task.attachments || [];
+                await updateTask.mutateAsync({
+                  taskId,
+                  data: { attachments: [...existing, ...newAttachments] } as any,
+                });
+              }}
+              onDelete={async (attachmentId) => {
+                const existing = task.attachments || [];
+                const updated = existing.filter((a) => a.id !== attachmentId);
+                await updateTask.mutateAsync({
+                  taskId,
+                  data: { attachments: updated } as any,
+                });
+              }}
+            />
+
             {/* Comment Section */}
-            <CommentSection taskId={task.id} />
+            <CommentSection taskId={task.id} workspaceId={workspaceId} />
           </div>
         ) : null}
       </DialogContent>
