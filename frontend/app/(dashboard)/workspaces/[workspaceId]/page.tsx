@@ -15,6 +15,7 @@ import {
 import { useWorkspaceDetail } from '@/features/workspace/hooks/use-workspace';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
 import { useProjects } from '@/features/project/hooks/use-projects';
+import { useWorkspaceTasks } from '@/features/task/hooks/use-tasks';
 import { WorkspaceAvatar } from '@/features/workspace/components/workspace-avatar';
 import { InviteMemberDialog } from '@/features/workspace/components/invite-member-dialog';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -33,6 +34,19 @@ export default function WorkspaceDashboardPage() {
   const { data: members } = useWorkspaceMembers(workspaceId);
   const { data: projects } = useProjects(workspaceId);
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
+
+  const projectIds = React.useMemo(() => projects?.map((p) => p.id) || [], [projects]);
+  const { tasks: allTasks } = useWorkspaceTasks(projectIds);
+
+  const todoCount = allTasks.filter((t) => t.status === 'TODO').length;
+  const inProgressCount = allTasks.filter((t) => t.status === 'IN_PROGRESS').length;
+  const inReviewCount = allTasks.filter((t) => t.status === 'IN_REVIEW').length;
+  const doneCount = allTasks.filter((t) => t.status === 'DONE').length;
+
+  const overdueCount = allTasks.filter((t) => {
+    if (!t.dueDate || t.status === 'DONE') return false;
+    return new Date(t.dueDate) < new Date();
+  }).length;
 
   return (
     <div className="space-y-6">
@@ -110,7 +124,7 @@ export default function WorkspaceDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">12</div>
+            <div className="text-2xl font-bold tracking-tight">{doneCount}</div>
             <p className="text-[11px] text-muted-foreground mt-1">Trong tuần này</p>
           </CardContent>
         </Card>
@@ -123,7 +137,7 @@ export default function WorkspaceDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight">2</div>
+            <div className="text-2xl font-bold tracking-tight">{overdueCount}</div>
             <p className="text-[11px] text-muted-foreground mt-1">Cần xử lý gấp</p>
           </CardContent>
         </Card>
@@ -131,8 +145,13 @@ export default function WorkspaceDashboardPage() {
 
       {/* Analytics Charts Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <TaskStatusChart todoCount={5} inProgressCount={8} inReviewCount={3} doneCount={12} />
-        <ProductivityChart />
+        <TaskStatusChart
+          todoCount={todoCount}
+          inProgressCount={inProgressCount}
+          inReviewCount={inReviewCount}
+          doneCount={doneCount}
+        />
+        <ProductivityChart tasks={allTasks} />
       </div>
 
       {/* Recent Projects & Activity Feed */}
@@ -169,7 +188,7 @@ export default function WorkspaceDashboardPage() {
         </Card>
 
         {/* Activity Feed */}
-        <RecentActivityFeed />
+        <RecentActivityFeed workspaceId={workspaceId} />
       </div>
 
       <InviteMemberDialog workspaceId={workspaceId} open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />

@@ -15,8 +15,6 @@ import { MemberOption, TaskPriority, TaskStatus } from '../../types/task.types';
 import { useUpdateTask, useDeleteTask, useTaskDetail } from '../../hooks/use-tasks';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
 import { useAuthStore } from '@/features/auth/store/auth-store';
-import { TaskLabels } from '../label/task-labels';
-import { TaskChecklist } from '../checklist/task-checklist';
 import { AttachmentList } from '../attachment/attachment-list';
 
 interface TaskDetailModalProps {
@@ -382,29 +380,7 @@ export function TaskDetailModal({
               )}
             </div>
 
-            {/* Task Labels & Attributes */}
-            <TaskLabels
-              labels={task.labels}
-              canEdit={canEditFull}
-              onUpdateLabels={async (newLabels) => {
-                await updateTask.mutateAsync({
-                  taskId,
-                  data: { labels: newLabels } as any,
-                });
-              }}
-            />
 
-            {/* Task Checklist */}
-            <TaskChecklist
-              items={task.checklist}
-              canEdit={canEditFull}
-              onUpdateChecklist={async (newChecklist) => {
-                await updateTask.mutateAsync({
-                  taskId,
-                  data: { checklist: newChecklist } as any,
-                });
-              }}
-            />
 
             {/* Attachments */}
             <AttachmentList

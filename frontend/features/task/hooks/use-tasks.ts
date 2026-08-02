@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/task-service';
 import { Task, TaskStatus, CreateTaskInput, UpdateTaskInput, MoveTaskInput, TaskFilters } from '../types/task.types';
 
@@ -9,6 +9,21 @@ export function useProjectTasks(projectId: string, filters?: TaskFilters) {
     enabled: Boolean(projectId),
     refetchOnWindowFocus: true,
   });
+}
+
+export function useWorkspaceTasks(projectIds: string[]) {
+  const results = useQueries({
+    queries: projectIds.map((projectId) => ({
+      queryKey: ['tasks', projectId],
+      queryFn: () => taskService.getProjectTasks(projectId),
+      enabled: Boolean(projectId),
+    })),
+  });
+
+  const isLoading = results.some((r) => r.isLoading);
+  const tasks = results.flatMap((r) => (r.data ? r.data : []));
+
+  return { tasks, isLoading };
 }
 
 export function useTaskDetail(taskId: string | null) {

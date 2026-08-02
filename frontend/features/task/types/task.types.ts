@@ -53,12 +53,9 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   attachments?: TaskAttachment[];
-  labels?: TaskLabel[];
-  checklist?: ChecklistItem[];
   _count?: {
     comments?: number;
     attachments?: number;
-    checklist?: number;
   };
 }
 
