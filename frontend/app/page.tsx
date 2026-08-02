@@ -2,16 +2,18 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Kanban, Shield, Zap, Users } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { CursorSparkles } from '@/components/ui/cursor-sparkles';
 
 export default function HomePage() {
   return (
     <div className="relative min-h-screen w-full bg-background text-foreground flex flex-col overflow-hidden transition-colors duration-200">
+      <CursorSparkles />
       {/* Hiệu ứng phát sáng nền */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 size-[500px] rounded-full bg-blue-500/10 blur-[150px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 size-[500px] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none"></div>
 
-      {/* Lưới grid nền */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none opacity-20 dark:opacity-40"></div>
+      {/* Lưới grid ô vuông nền tinh tế */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.07)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_40%,#000_70%,transparent_100%)] pointer-events-none opacity-50 dark:opacity-60"></div>
 
       {/* Header - Sticky & Distinct */}
       <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/80 backdrop-blur-md shadow-2xs transition-colors duration-200">

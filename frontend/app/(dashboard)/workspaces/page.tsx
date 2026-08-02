@@ -6,13 +6,17 @@ import { useWorkspaces } from '@/features/workspace/hooks/use-workspace';
 import { WorkspaceCard } from '@/features/workspace/components/workspace-card';
 import { CreateWorkspaceDialog } from '@/features/workspace/components/create-workspace-dialog';
 import { Button } from '@/components/ui/button';
+import { CursorSparkles } from '@/components/ui/cursor-sparkles';
 
 export default function WorkspacesPage() {
   const { data: workspaces, isLoading, isError } = useWorkspaces();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-muted/30 p-6 md:p-10">
+    <div className="min-h-screen bg-background p-6 md:p-10 relative overflow-hidden">
+      <CursorSparkles />
+      {/* Lưới grid ô vuông nền tinh tế */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.07)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_40%,#000_70%,transparent_100%)] pointer-events-none opacity-50 dark:opacity-60" />
       <div className="mx-auto max-w-5xl space-y-8">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
