@@ -10,7 +10,7 @@ function Select({
   onValueChange,
   ...props
 }: Omit<SelectPrimitive.Root.Props<string>, 'onValueChange'> & {
-  onValueChange?: (value: string | null) => void;
+  onValueChange?: (value: string) => void;
 }) {
   return (
     <SelectPrimitive.Root<string>

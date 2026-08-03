@@ -200,7 +200,7 @@ export function CreateTaskDialog({
               <Label className="text-sm font-semibold text-foreground">Người thực hiện</Label>
               <Select
                 value={currentAssignee || 'UNASSIGNED'}
-                onValueChange={(val) => setValue('assigneeId', val)}
+                onValueChange={(val) => setValue('assigneeId', val === 'UNASSIGNED' ? undefined : val)}
               >
                 <SelectTrigger className="h-10 text-sm bg-background w-full">
                   <SelectValue placeholder="Chọn người làm">
