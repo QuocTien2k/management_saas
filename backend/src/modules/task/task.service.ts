@@ -112,31 +112,13 @@ export class TaskService {
     const { project } = await this.checkProjectAccess(dto.projectId, userId, [
       WorkspaceRole.OWNER,
       WorkspaceRole.ADMIN,
+      WorkspaceRole.MEMBER,
     ]);
 
-    const targetIdOrStatus = dto.columnId || (dto.status as string);
-
-    let targetColumnId: string | null = null;
-    let targetStatus: TaskStatus = TaskStatus.TODO;
-
-    if (targetIdOrStatus) {
-      const column = await this.findProjectColumn(dto.projectId, targetIdOrStatus);
-
-      if (column) {
-        targetColumnId = column.id;
-        targetStatus = column.status;
-      } else if (Object.values(TaskStatus).includes(targetIdOrStatus as TaskStatus)) {
-        targetStatus = targetIdOrStatus as TaskStatus;
-        targetColumnId = null;
-      } else if (dto.status && Object.values(TaskStatus).includes(dto.status)) {
-        targetStatus = dto.status;
-        targetColumnId = null;
-      } else {
-        throw new BadRequestException('Cột Kanban hoặc trạng thái không hợp lệ.');
-      }
-    } else if (dto.status) {
-      targetStatus = dto.status;
-    }
+    // Tất cả công việc mới tạo đều mặc định ở trạng thái TODO (Cần làm)
+    const targetStatus: TaskStatus = TaskStatus.TODO;
+    const todoColumn = await this.findProjectColumn(dto.projectId, TaskStatus.TODO);
+    const targetColumnId: string | null = todoColumn ? todoColumn.id : null;
 
     // Nếu có gán người thực hiện, kiểm tra xem người đó có thuộc Workspace không
     if (dto.assigneeId) {
