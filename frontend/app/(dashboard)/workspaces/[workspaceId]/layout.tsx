@@ -10,8 +10,8 @@ import {
   SettingsIcon,
   LogOutIcon,
   BellIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from 'lucide-react';
 
 import { useWorkspaceDetail } from '@/features/workspace/hooks/use-workspace';
@@ -104,29 +104,16 @@ export default function WorkspaceLayout({
         )}
       >
         <div className="space-y-5">
-          {/* Top Header Logo & Toggle Button */}
-          <div className={cn('flex items-center justify-between px-1', isCollapsed && 'flex-col gap-3')}>
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-xs">
-                M
-              </div>
-              {!isCollapsed && (
-                <span className="font-bold text-base tracking-tight truncate text-foreground">
-                  SaaS Manage
-                </span>
-              )}
+          {/* Top Header Logo */}
+          <div className={cn('flex items-center gap-2.5 px-1', isCollapsed && 'justify-center px-0')}>
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-xs">
+              M
             </div>
-            <button
-              onClick={toggleSidebar}
-              title={isCollapsed ? 'Mở rộng sidebar' : 'Thu nhỏ sidebar'}
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer"
-            >
-              {isCollapsed ? (
-                <PanelLeftOpenIcon className="size-4" />
-              ) : (
-                <PanelLeftCloseIcon className="size-4" />
-              )}
-            </button>
+            {!isCollapsed && (
+              <span className="font-bold text-base tracking-tight truncate text-foreground">
+                SaaS Manage
+              </span>
+            )}
           </div>
 
           {/* Workspace Switcher */}
@@ -232,8 +219,21 @@ export default function WorkspaceLayout({
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation Bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/80 bg-background/80 px-6 backdrop-blur-md dark:bg-card/80">
-          <div className="flex items-center gap-3">
-            <h2 className="text-base font-semibold tracking-tight">
+          <div className="flex items-center gap-3 relative">
+            {/* Toggle Sidebar Button (Tab-style sticking out to the left over sidebar border) */}
+            <button
+              onClick={toggleSidebar}
+              title={isCollapsed ? 'Mở rộng sidebar' : 'Thu nhỏ sidebar'}
+              className="hidden md:flex absolute -left-6.5 top-1/2 -translate-y-1/2 size-8 items-center justify-center cursor-pointer rounded-r-xl border border-l-0 border-border/80 dark:border-white/15 bg-card dark:bg-slate-900 text-foreground dark:text-slate-100 shadow-xs hover:bg-accent dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white active:scale-95 transition-all duration-300 z-40"
+            >
+              {isCollapsed ? (
+                <ChevronRightIcon className="size-5 stroke-[2.2]" />
+              ) : (
+                <ChevronLeftIcon className="size-5 stroke-[2.2]" />
+              )}
+            </button>
+
+            <h2 className="text-base font-semibold tracking-tight ml-4">
               {workspace?.name || 'Workspace'}
             </h2>
           </div>

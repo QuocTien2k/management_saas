@@ -99,7 +99,7 @@ export function CommentItem({ comment, taskId }: CommentItemProps) {
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="text-xs min-h-[60px]"
+              className="text-xs min-h-15"
             />
             <div className="flex items-center gap-2">
               <Button
