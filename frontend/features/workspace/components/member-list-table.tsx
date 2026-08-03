@@ -105,7 +105,8 @@ export function MemberListTable({
   };
 
   return (
-    <Table>
+    <>
+      <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Thành viên</TableHead>

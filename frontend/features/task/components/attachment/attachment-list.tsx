@@ -32,6 +32,7 @@ export function AttachmentList({
 }: AttachmentListProps) {
   const [isUploading, setIsUploading] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [attachmentToDelete, setAttachmentToDelete] = React.useState<string | null>(null);
   const [isDragOver, setIsDragOver] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 

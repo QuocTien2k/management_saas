@@ -16,6 +16,7 @@ import { useUpdateTask, useDeleteTask, useTaskDetail } from '../../hooks/use-tas
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import { AttachmentList } from '../attachment/attachment-list';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface TaskDetailModalProps {
   taskId: string | null;
@@ -58,6 +59,7 @@ export function TaskDetailModal({
   const [description, setDescription] = React.useState('');
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
   const [isEditingDesc, setIsEditingDesc] = React.useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
 
   const currentMember = React.useMemo(() => {
     if (!workspaceMembers || !user?.id) return null;
@@ -81,7 +83,7 @@ export function TaskDetailModal({
 
   if (!open || !taskId) return null;
 
-  const selectedMember = members?.find((m) => m.id === task?.assigneeId);
+  const selectedMember = workspaceMembers?.find((m) => m.userId === task?.assigneeId || m.user?.id === task?.assigneeId);
 
   const handleTitleSave = async () => {
     if (!title.trim() || title === task?.title) {
@@ -280,12 +282,14 @@ export function TaskDetailModal({
                       {selectedMember ? (
                         <div className="flex items-center gap-1.5 truncate">
                           <Avatar className="size-4 shrink-0">
-                            <AvatarImage src={selectedMember.avatar || undefined} />
+                            <AvatarImage src={selectedMember.user.avatar || undefined} />
                             <AvatarFallback className="text-[8px]">
-                              {selectedMember.fullname?.slice(0, 2).toUpperCase()}
+                              {(selectedMember.user.fullname || selectedMember.user.email).slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="truncate text-xs font-medium">{selectedMember.fullname}</span>
+                          <span className="truncate text-xs font-medium">
+                            {selectedMember.user.fullname || selectedMember.user.email}
+                          </span>
                         </div>
                       ) : (
                         'Chưa giao'
@@ -294,19 +298,25 @@ export function TaskDetailModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="UNASSIGNED">Chưa giao</SelectItem>
-                    {members?.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        <div className="flex items-center gap-2 max-w-full overflow-hidden py-0.5">
-                          <Avatar className="size-4 shrink-0 border border-border/60">
-                            <AvatarImage src={m.avatar || undefined} />
-                            <AvatarFallback className="text-[8px]">
-                              {m.fullname?.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="truncate text-xs">{m.fullname} ({m.email})</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {workspaceMembers?.map((m) => {
+                      const uId = m.userId || m.user.id;
+                      const name = m.user.fullname || m.user.email;
+                      return (
+                        <SelectItem key={m.id} value={uId}>
+                          <div className="flex items-center gap-2 max-w-full overflow-hidden py-0.5">
+                            <Avatar className="size-4 shrink-0 border border-border/60">
+                              <AvatarImage src={m.user.avatar || undefined} />
+                              <AvatarFallback className="text-[8px]">
+                                {name.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate text-xs">
+                              {m.user.fullname ? `${m.user.fullname} (${m.user.email})` : m.user.email}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
