@@ -6,17 +6,27 @@
  * @returns Thông báo lỗi dạng chuỗi (string)
  */
 export function getErrorMessage(
-  error: any,
+  error: unknown,
   defaultMessage = 'Có lỗi xảy ra, vui lòng thử lại sau.'
 ): string {
   if (!error) return defaultMessage;
   if (typeof error === 'string') return error;
   
+  const err = error as {
+    response?: {
+      data?: {
+        error?: { message?: string };
+        message?: string;
+      };
+    };
+    message?: string;
+  };
+
   // Trích xuất từ NestJS / API standard error format (error.response?.data?.error?.message hoặc error.response?.data?.message)
   return (
-    error.response?.data?.error?.message ||
-    error.response?.data?.message ||
-    error.message ||
+    err.response?.data?.error?.message ||
+    err.response?.data?.message ||
+    err.message ||
     defaultMessage
   );
 }

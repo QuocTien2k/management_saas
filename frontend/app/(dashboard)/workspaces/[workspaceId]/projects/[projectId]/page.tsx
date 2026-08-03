@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { Loader2Icon, FolderKanbanIcon } from 'lucide-react';
+import { Loader2Icon } from 'lucide-react';
 
 import { useProjectDetail } from '@/features/project/hooks/use-projects';
 import { useWorkspaceMembers } from '@/features/workspace/hooks/use-members';

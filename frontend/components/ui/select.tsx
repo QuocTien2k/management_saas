@@ -9,11 +9,11 @@ import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 function Select({
   onValueChange,
   ...props
-}: Omit<React.ComponentProps<typeof SelectPrimitive.Root>, 'onValueChange'> & {
-  onValueChange?: (value: any) => void;
+}: Omit<SelectPrimitive.Root.Props<string>, 'onValueChange'> & {
+  onValueChange?: (value: string | null) => void;
 }) {
   return (
-    <SelectPrimitive.Root
+    <SelectPrimitive.Root<string>
       onValueChange={(val) => {
         if (onValueChange && val !== null && val !== undefined) {
           onValueChange(val);

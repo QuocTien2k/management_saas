@@ -20,7 +20,6 @@ import { WorkspaceAvatar } from '@/features/workspace/components/workspace-avata
 import { InviteMemberDialog } from '@/features/workspace/components/invite-member-dialog';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProjectCard } from '@/features/project/components/project-card';
 import { TaskStatusChart } from '@/features/dashboard/components/task-status-chart';
 import { ProductivityChart } from '@/features/dashboard/components/productivity-chart';

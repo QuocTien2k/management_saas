@@ -5,7 +5,6 @@ import { AlertTriangleIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,

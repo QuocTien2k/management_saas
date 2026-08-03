@@ -19,6 +19,7 @@ import {
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import { memberService } from '@/features/workspace/services/member-service';
 import { WORKSPACE_KEYS } from '@/features/workspace/hooks/use-workspace';
+import { Workspace } from '@/features/workspace/types/workspace';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -33,7 +34,7 @@ export default function AcceptInvitationPage() {
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isEmailMismatch, setIsEmailMismatch] = React.useState(false);
-  const [joinedWorkspace, setJoinedWorkspace] = React.useState<any>(null);
+  const [joinedWorkspace, setJoinedWorkspace] = React.useState<Workspace | null>(null);
 
   const hasAttemptedRef = React.useRef(false);
 
@@ -64,7 +65,7 @@ export default function AcceptInvitationPage() {
         queryClient.invalidateQueries({ queryKey: WORKSPACE_KEYS.lists() });
 
         // Tự động điều hướng sau 1.5s
-        const wsId = result.workspace?.id || result.workspace?.workspaceId;
+        const wsId = result.workspace?.id;
         setTimeout(() => {
           if (wsId) {
             router.push(`/workspaces/${wsId}`);
@@ -72,16 +73,17 @@ export default function AcceptInvitationPage() {
             router.push('/workspaces');
           }
         }, 1500);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Accept invitation error:', err);
         setStatus('error');
+        const error = err as { response?: { data?: { error?: { message?: string }; message?: string }; status?: number } };
         const msg =
-          err?.response?.data?.error?.message ||
-          err?.response?.data?.message ||
+          error?.response?.data?.error?.message ||
+          error?.response?.data?.message ||
           'Lời mời đã hết hạn hoặc bạn đã tham gia Workspace này rồi.';
         
         setErrorMessage(msg);
-        if (msg.includes('không trùng khớp') || err?.response?.status === 403) {
+        if (msg.includes('không trùng khớp') || error?.response?.status === 403) {
           setIsEmailMismatch(true);
         }
       }

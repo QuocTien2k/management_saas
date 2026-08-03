@@ -81,7 +81,7 @@ export const CursorSparkles = () => {
     window.addEventListener('mousemove', handleMove, { capture: true, passive: true });
 
     return () => {
-      window.removeEventListener('mousemove', handleMove, { capture: true } as any);
+      window.removeEventListener('mousemove', handleMove, { capture: true });
     };
   }, [createParticle, mounted]);
 

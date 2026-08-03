@@ -9,7 +9,6 @@ import {
   UsersIcon,
   SettingsIcon,
   LogOutIcon,
-  BellIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from 'lucide-react';
@@ -28,8 +27,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
