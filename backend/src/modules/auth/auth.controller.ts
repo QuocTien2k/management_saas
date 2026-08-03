@@ -33,10 +33,11 @@ export class AuthController {
     refreshToken: string,
     expiresAt: Date,
   ) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       expires: expiresAt,
       path: '/',
     });
@@ -44,10 +45,11 @@ export class AuthController {
 
   // Xóa HttpOnly Cookie chứa refresh token
   private clearRefreshTokenCookie(res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
     });
   }

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const refreshToken = request.cookies.get('refreshToken')?.value;
+  const refreshToken = request.cookies.get('refreshToken')?.value || request.cookies.get('auth_session')?.value;
 
   // Các trang xác thực (chỉ cho phép truy cập khi chưa đăng nhập)
   const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password'];
