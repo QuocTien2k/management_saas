@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project Management SaaS",
+  title: "ProFlow Task - Hệ thống quản lý công việc và dự án hiện đại",
   description: "Hệ thống quản lý công việc và dự án hiện đại",
 };
 

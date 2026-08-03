@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="size-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
               <Kanban className="size-5" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-foreground">Antigravity Task</span>
+            <span className="text-lg font-bold tracking-tight text-foreground">ProFlow Task</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Footer - Distinct & Framed */}
       <footer className="relative z-10 w-full border-t border-border/80 bg-background/80 backdrop-blur-md py-4 text-center text-xs text-muted-foreground transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© 2026 Antigravity Task. Bảo lưu mọi quyền.</p>
+          <p>© 2026 ProFlow Task. Bảo lưu mọi quyền.</p>
           <div className="flex gap-4">
             <Link href="/" className="hover:text-foreground transition-colors">Trang chủ</Link>
             <a href="#" className="hover:text-foreground transition-colors">Điều khoản</a>

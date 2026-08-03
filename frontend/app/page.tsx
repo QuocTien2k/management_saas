@@ -22,7 +22,7 @@ export default function HomePage() {
             <div className="size-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
               <Kanban className="size-5" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-foreground">Antigravity Task</span>
+            <span className="text-xl font-bold tracking-tight text-foreground">ProFlow Task</span>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -108,7 +108,7 @@ export default function HomePage() {
       {/* Footer - Distinct & Framed */}
       <footer className="relative z-10 w-full border-t border-border/80 bg-background/80 backdrop-blur-md py-6 text-xs text-muted-foreground transition-colors duration-200 mt-auto">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 Antigravity Task. Bảo lưu mọi quyền.</p>
+          <p>© 2026 ProFlow Task. Bảo lưu mọi quyền.</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-foreground transition-colors">Điều khoản</a>
             <a href="#" className="hover:text-foreground transition-colors">Bảo mật</a>
