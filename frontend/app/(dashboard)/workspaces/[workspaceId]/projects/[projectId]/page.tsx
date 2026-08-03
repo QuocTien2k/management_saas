@@ -98,6 +98,8 @@ export default function ProjectBoardPage() {
           <KanbanBoard
             projectId={projectId}
             tasks={tasks || []}
+            currentUserId={user?.id}
+            currentUserRole={currentMember?.role}
             onTaskClick={handleTaskClick}
             onQuickCreateTask={canCreateTask ? handleQuickCreateTask : undefined}
           />

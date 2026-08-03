@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
+import { WorkspaceRole } from '@/features/workspace/types/workspace';
 import { Task, TaskStatus } from '../../types/task.types';
 import { KanbanColumn } from './kanban-column';
 import { useMoveTask } from '../../hooks/use-tasks';
@@ -9,6 +10,8 @@ import { useMoveTask } from '../../hooks/use-tasks';
 interface KanbanBoardProps {
   projectId: string;
   tasks: Task[];
+  currentUserId?: string;
+  currentUserRole?: WorkspaceRole;
   onTaskClick: (task: Task) => void;
   onQuickCreateTask?: (status: TaskStatus) => void;
 }
@@ -23,6 +26,8 @@ const COLUMNS: { id: TaskStatus; title: string }[] = [
 export function KanbanBoard({
   projectId,
   tasks,
+  currentUserId,
+  currentUserRole,
   onTaskClick,
   onQuickCreateTask,
 }: KanbanBoardProps) {
@@ -96,6 +101,8 @@ export function KanbanBoard({
             id={col.id}
             title={col.title}
             tasks={tasksByColumn[col.id] || []}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
             onTaskClick={onTaskClick}
             onQuickCreateTask={onQuickCreateTask}
           />

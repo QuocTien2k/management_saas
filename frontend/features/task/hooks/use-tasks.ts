@@ -1,6 +1,8 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/task-service';
 import { Task, TaskStatus, CreateTaskInput, UpdateTaskInput, MoveTaskInput, TaskFilters } from '../types/task.types';
+import { toast } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/error';
 
 export function useProjectTasks(projectId: string, filters?: TaskFilters) {
   return useQuery({
@@ -63,6 +65,9 @@ export function useUpdateTask(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       queryClient.invalidateQueries({ queryKey: ['task', variables.taskId] });
     },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Không thể cập nhật công việc.'));
+    },
   });
 }
 
@@ -73,6 +78,9 @@ export function useDeleteTask(projectId: string) {
     mutationFn: (taskId: string) => taskService.deleteTask(taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Không thể xóa công việc.'));
     },
   });
 }
@@ -108,6 +116,7 @@ export function useMoveTask(projectId: string) {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      toast.error(getErrorMessage(err, 'Không thể di chuyển công việc.'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });

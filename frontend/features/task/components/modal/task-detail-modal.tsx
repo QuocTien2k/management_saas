@@ -65,8 +65,12 @@ export function TaskDetailModal({
   }, [workspaceMembers, user?.id]);
 
   const isOwnerOrAdmin = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN';
-  const canDelete = isOwnerOrAdmin;
-  const canEditFull = isOwnerOrAdmin;
+  const isReporterOrAssignee = Boolean(
+    task && user?.id && (task.reporterId === user.id || task.assigneeId === user.id)
+  );
+
+  const canEditTask = isOwnerOrAdmin || isReporterOrAssignee;
+  const canDelete = isOwnerOrAdmin || Boolean(task && user?.id && task.reporterId === user.id);
 
   React.useEffect(() => {
     if (task) {
@@ -181,7 +185,7 @@ export function TaskDetailModal({
             <div className="flex items-center justify-between border-b border-border/60 pb-4 pr-8">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trạng thái:</span>
-                <Select value={task.status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
+                <Select disabled={!canEditTask} value={task.status} onValueChange={(v) => handleStatusChange(v as TaskStatus)}>
                   <SelectTrigger className="h-8 text-xs font-bold w-37.5 bg-background">
                     <SelectValue>
                       {statusMap[task.status] || 'Cần làm'}
@@ -211,7 +215,7 @@ export function TaskDetailModal({
 
             {/* Tiêu đề Task (Inline Edit) */}
             <div className="space-y-1">
-              {isEditingTitle && canEditFull ? (
+              {isEditingTitle && canEditTask ? (
                 <div className="flex items-center gap-2">
                   <Input
                     value={title}
@@ -230,14 +234,14 @@ export function TaskDetailModal({
               ) : (
                 <h2
                   className={`text-xl font-bold text-foreground flex items-center justify-between group ${
-                    canEditFull ? 'hover:bg-muted/40 p-2 -ml-2 rounded-lg cursor-pointer transition-colors' : ''
+                    canEditTask ? 'hover:bg-muted/40 p-2 -ml-2 rounded-lg cursor-pointer transition-colors' : ''
                   }`}
                   onClick={() => {
-                    if (canEditFull) setIsEditingTitle(true);
+                    if (canEditTask) setIsEditingTitle(true);
                   }}
                 >
                   <span>{task.title}</span>
-                  {canEditFull && (
+                  {canEditTask && (
                     <Edit3Icon className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0" />
                   )}
                 </h2>
@@ -249,7 +253,7 @@ export function TaskDetailModal({
               {/* Priority */}
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">Độ ưu tiên</span>
-                <Select disabled={!canEditFull} value={task.priority} onValueChange={(v) => handlePriorityChange(v as TaskPriority)}>
+                <Select disabled={!canEditTask} value={task.priority} onValueChange={(v) => handlePriorityChange(v as TaskPriority)}>
                   <SelectTrigger className="h-8 text-xs font-medium bg-background w-full">
                     <SelectValue>
                       {priorityMap[task.priority] || 'Trung bình'}
@@ -268,7 +272,7 @@ export function TaskDetailModal({
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">Người thực hiện</span>
                 <Select
-                  disabled={!canEditFull}
+                  disabled={!canEditTask}
                   value={task.assigneeId || 'UNASSIGNED'}
                   onValueChange={(v) => handleAssigneeChange(v as string)}
                 >
@@ -312,7 +316,7 @@ export function TaskDetailModal({
               <div className="space-y-1.5">
                 <span className="text-xs font-semibold text-muted-foreground">Hạn hoàn thành</span>
                 <Input
-                  disabled={!canEditFull}
+                  disabled={!canEditTask}
                   type="date"
                   value={formattedDueDateInput}
                   onChange={handleDueDateChange}
@@ -325,7 +329,7 @@ export function TaskDetailModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Mô tả công việc</span>
-                {!isEditingDesc && canEditFull && (
+                {!isEditingDesc && canEditTask && (
                   <Button
                     variant="ghost"
                     size="xs"
@@ -337,7 +341,7 @@ export function TaskDetailModal({
                 )}
               </div>
 
-              {isEditingDesc && canEditFull ? (
+              {isEditingDesc && canEditTask ? (
                 <div className="space-y-2.5">
                   <Textarea
                     value={description}
@@ -365,28 +369,26 @@ export function TaskDetailModal({
               ) : (
                 <div
                   className={`p-3.5 rounded-xl bg-muted/20 border border-border/50 text-sm leading-relaxed min-h-16 whitespace-pre-wrap text-foreground/90 ${
-                    canEditFull ? 'cursor-pointer hover:border-border transition-colors' : ''
+                    canEditTask ? 'cursor-pointer hover:border-border transition-colors' : ''
                   }`}
                   onClick={() => {
-                    if (canEditFull) setIsEditingDesc(true);
+                    if (canEditTask) setIsEditingDesc(true);
                   }}
                 >
                   {task.description || (
                     <span className="text-muted-foreground italic text-xs">
-                      {canEditFull ? 'Chưa có mô tả chi tiết. Bấm vào đây để thêm...' : 'Chưa có mô tả chi tiết.'}
+                      {canEditTask ? 'Chưa có mô tả chi tiết. Bấm vào đây để thêm...' : 'Chưa có mô tả chi tiết.'}
                     </span>
                   )}
                 </div>
               )}
             </div>
 
-
-
             {/* Attachments */}
             <AttachmentList
               taskId={task.id}
               attachments={task.attachments}
-              canEdit={canEditFull}
+              canEdit={canEditTask}
               onUpload={async (files) => {
                 // Upload handler demo/integration
                 const newAttachments = Array.from(files).map((f, idx) => ({

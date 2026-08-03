@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 import { PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WorkspaceRole } from '@/features/workspace/types/workspace';
 import { Task, TaskStatus } from '../../types/task.types';
 import { KanbanCard } from './kanban-card';
 
@@ -11,6 +12,8 @@ interface KanbanColumnProps {
   id: TaskStatus;
   title: string;
   tasks: Task[];
+  currentUserId?: string;
+  currentUserRole?: WorkspaceRole;
   onTaskClick: (task: Task) => void;
   onQuickCreateTask?: (status: TaskStatus) => void;
 }
@@ -26,6 +29,8 @@ export function KanbanColumn({
   id,
   title,
   tasks,
+  currentUserId,
+  currentUserRole,
   onTaskClick,
   onQuickCreateTask,
 }: KanbanColumnProps) {
@@ -70,6 +75,8 @@ export function KanbanColumn({
                 key={task.id}
                 task={task}
                 index={index}
+                currentUserId={currentUserId}
+                currentUserRole={currentUserRole}
                 onClick={() => onTaskClick(task)}
               />
             ))}

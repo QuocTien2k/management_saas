@@ -5,12 +5,14 @@ import { Draggable } from '@hello-pangea/dnd';
 import { CalendarIcon, MessageSquareIcon, AlertCircleIcon, ArrowUpIcon, ArrowDownIcon, MinusIcon, PaperclipIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { WorkspaceRole } from '@/features/workspace/types/workspace';
 import { Task, TaskPriority } from '../../types/task.types';
 
 interface KanbanCardProps {
   task: Task;
   index: number;
+  currentUserId?: string;
+  currentUserRole?: WorkspaceRole;
   onClick?: () => void;
 }
 
@@ -37,7 +39,13 @@ const priorityConfig: Record<TaskPriority, { label: string; bg: string; icon: Re
   },
 };
 
-export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
+export function KanbanCard({ task, index, currentUserId, currentUserRole, onClick }: KanbanCardProps) {
+  const isOwnerOrAdmin = currentUserRole === 'OWNER' || currentUserRole === 'ADMIN';
+  const isReporterOrAssignee = Boolean(
+    currentUserId && (task.reporterId === currentUserId || task.assigneeId === currentUserId)
+  );
+  const canMove = isOwnerOrAdmin || isReporterOrAssignee;
+
   const priority = priorityConfig[task.priority] || priorityConfig.MEDIUM;
 
   const formattedDueDate = task.dueDate
@@ -48,14 +56,14 @@ export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
     : null;
 
   return (
-    <Draggable draggableId={task.id} index={index}>
+    <Draggable draggableId={task.id} index={index} isDragDisabled={!canMove}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className="mb-2.5 outline-none select-none cursor-grab active:cursor-grabbing"
+          className={`mb-2.5 outline-none select-none ${canMove ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
         >
           <Card
             className={`transition-all duration-150 border-border/70 hover:border-border hover:shadow-sm ${
