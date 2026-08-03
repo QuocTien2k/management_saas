@@ -165,7 +165,7 @@ export default function AcceptInvitationPage() {
             <CardContent className="p-6 pt-2">
               <Button
                 onClick={() => {
-                  const wsId = joinedWorkspace?.id || joinedWorkspace?.workspaceId;
+                  const wsId = joinedWorkspace?.id;
                   if (wsId) {
                     router.push(`/workspaces/${wsId}`);
                   } else {
