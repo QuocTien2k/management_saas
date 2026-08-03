@@ -105,6 +105,17 @@ export class ProjectService {
         workspaceId,
         deletedAt: null,
       },
+      include: {
+        _count: {
+          select: {
+            tasks: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        },
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -144,6 +155,15 @@ export class ProjectService {
         columns: {
           orderBy: {
             position: 'asc',
+          },
+        },
+        _count: {
+          select: {
+            tasks: {
+              where: {
+                deletedAt: null,
+              },
+            },
           },
         },
       },
