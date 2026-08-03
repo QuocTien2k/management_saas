@@ -4,6 +4,8 @@ import * as React from 'react';
 import { ShieldCheckIcon, ShieldIcon, UserIcon, MoreHorizontalIcon, Trash2Icon, LogOutIcon } from 'lucide-react';
 import { WorkspaceMember, WorkspaceRole } from '../types/workspace';
 import { useUpdateMemberRole, useRemoveMember } from '../hooks/use-members';
+import { toast } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/error';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,17 +53,21 @@ export function MemberListTable({
   const handleRoleChange = async (memberId: string, newRole: WorkspaceRole) => {
     try {
       await updateRoleMutation.mutateAsync({ memberId, role: newRole });
+      toast.success('Đã cập nhật vai trò thành viên thành công');
     } catch (error) {
       console.error('Failed to change role:', error);
+      toast.error(getErrorMessage(error, 'Không thể cập nhật vai trò thành viên.'));
     }
   };
 
   const handleRemove = async (memberId: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa thành viên này khỏi Workspace?')) {
+    if (confirm('Bạn có chắc chắn muốn xóa/rời khỏi Workspace này?')) {
       try {
         await removeMemberMutation.mutateAsync(memberId);
+        toast.success('Thao tác thành công');
       } catch (error) {
         console.error('Failed to remove member:', error);
+        toast.error(getErrorMessage(error, 'Không thể thực hiện thao tác xóa/rời khỏi Workspace.'));
       }
     }
   };

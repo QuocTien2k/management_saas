@@ -10,6 +10,8 @@ import {
   InviteMemberFormValues,
 } from '../schemas/workspace-schema';
 import { useInviteMember } from '../hooks/use-members';
+import { toast } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/error';
 import {
   Dialog,
   DialogContent,
@@ -49,7 +51,6 @@ export function InviteMemberDialog({
   const setOpen = isControlled ? setControlledOpen! : setInternalOpen;
 
   const inviteMutation = useInviteMember(workspaceId);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
   const {
     register,
@@ -67,16 +68,14 @@ export function InviteMemberDialog({
 
   const onSubmit = async (values: InviteMemberFormValues) => {
     try {
-      setSuccessMessage(null);
       await inviteMutation.mutateAsync(values);
-      setSuccessMessage(`Đã gửi lời mời thành công đến ${values.email}`);
+      toast.success(`Đã gửi lời mời thành công đến ${values.email}`);
       reset();
-      setTimeout(() => {
-        setSuccessMessage(null);
-        setOpen(false);
-      }, 1500);
+      setOpen(false);
     } catch (error: any) {
       console.error('Failed to invite member:', error);
+      toast.error(getErrorMessage(error, 'Không thể gửi lời mời thành viên.'));
+      setOpen(false);
     }
   };
 
@@ -96,12 +95,7 @@ export function InviteMemberDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {successMessage ? (
-          <div className="rounded-lg bg-emerald-500/15 p-4 text-sm font-medium text-emerald-700 dark:text-emerald-300 text-center border border-emerald-500/30">
-            {successMessage}
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="invite-email">Địa chỉ Email</Label>
               <div className="relative">
@@ -166,7 +160,6 @@ export function InviteMemberDialog({
               </Button>
             </DialogFooter>
           </form>
-        )}
       </DialogContent>
     </Dialog>
   );
