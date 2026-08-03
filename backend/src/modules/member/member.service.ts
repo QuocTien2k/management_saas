@@ -31,6 +31,8 @@ export class MemberService {
       },
       select: {
         id: true,
+        workspaceId: true,
+        userId: true,
         role: true,
         joinedAt: true,
         user: {
