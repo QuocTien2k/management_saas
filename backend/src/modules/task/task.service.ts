@@ -69,6 +69,22 @@ export class TaskService {
     return { task, ...access };
   }
 
+  // Helper kiểm tra quyền tác động / thay đổi công việc (Sửa, Đổi trạng thái, Chuyển cột)
+  private canMutateTask(
+    task: { reporterId: string; assigneeId?: string | null },
+    userId: string,
+    membershipRole: WorkspaceRole,
+  ): boolean {
+    if (membershipRole === WorkspaceRole.OWNER || membershipRole === WorkspaceRole.ADMIN) {
+      return true;
+    }
+    if (membershipRole === WorkspaceRole.VIEWER) {
+      return false;
+    }
+    // Đối với MEMBER: Chỉ người tạo (reporter) hoặc người thực hiện (assignee) mới có quyền
+    return task.reporterId === userId || task.assigneeId === userId;
+  }
+
   // Helper tìm cột Kanban an toàn theo columnId (UUID) hoặc TaskStatus (enum)
   private async findProjectColumn(projectId: string, targetIdOrStatus: string) {
     const isEnumStatus = Object.values(TaskStatus).includes(targetIdOrStatus as TaskStatus);
@@ -312,20 +328,10 @@ export class TaskService {
   async updateTask(id: string, userId: string, dto: UpdateTaskDto) {
     const { task, project, membership } = await this.checkTaskAccess(id, userId);
 
-    const isOwnerOrAdmin =
-      membership.role === WorkspaceRole.OWNER || membership.role === WorkspaceRole.ADMIN;
-
-    if (!isOwnerOrAdmin) {
-      const isUpdatingOtherFields =
-        (dto.title !== undefined && dto.title !== task.title) ||
-        (dto.description !== undefined && dto.description !== task.description) ||
-        (dto.priority !== undefined && dto.priority !== task.priority) ||
-        dto.dueDate !== undefined ||
-        (dto.assigneeId !== undefined && dto.assigneeId !== task.assigneeId);
-
-      if (isUpdatingOtherFields) {
-        throw new ForbiddenException('Thành viên chỉ được phép cập nhật trạng thái của công việc.');
-      }
+    if (!this.canMutateTask(task, userId, membership.role)) {
+      throw new ForbiddenException(
+        'Bạn không có quyền chỉnh sửa công việc này. Chỉ người tạo, người thực hiện, Admin hoặc Owner mới có quyền chỉnh sửa.',
+      );
     }
 
     const data: any = {};
@@ -478,7 +484,13 @@ export class TaskService {
   }
 
   async moveTask(id: string, userId: string, dto: MoveTaskDto) {
-    const { task, project } = await this.checkTaskAccess(id, userId);
+    const { task, project, membership } = await this.checkTaskAccess(id, userId);
+
+    if (!this.canMutateTask(task, userId, membership.role)) {
+      throw new ForbiddenException(
+        'Bạn không có quyền di chuyển hoặc thay đổi trạng thái của công việc này.',
+      );
+    }
 
     const targetIdOrStatus = dto.columnId || (dto.status as string);
     if (!targetIdOrStatus) {
@@ -713,7 +725,11 @@ export class TaskService {
   }
 
   async assignLabelsToTask(taskId: string, userId: string, labelIds: string[]) {
-    const { task } = await this.checkTaskAccess(taskId, userId);
+    const { task, membership } = await this.checkTaskAccess(taskId, userId);
+
+    if (!this.canMutateTask(task, userId, membership.role)) {
+      throw new ForbiddenException('Bạn không có quyền gán nhãn cho công việc này.');
+    }
 
     return this.prisma.$transaction(async (tx) => {
       // Xóa các liên kết nhãn cũ
