@@ -17,7 +17,9 @@ export default function WorkspaceSettingsPage() {
   const { data: workspace, isLoading: isWsLoading } = useWorkspaceDetail(workspaceId);
   const { data: members } = useWorkspaceMembers(workspaceId);
 
-  const currentMember = members?.find((m) => m.userId === user?.id);
+  const currentMember = members?.find(
+    (m) => m.userId === user?.id || m.user?.id === user?.id
+  );
   const currentUserRole = currentMember?.role || 'MEMBER';
 
   if (isWsLoading) {

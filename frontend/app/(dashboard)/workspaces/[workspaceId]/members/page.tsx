@@ -18,8 +18,9 @@ export default function WorkspaceMembersPage() {
   const { data: members, isLoading, isError } = useWorkspaceMembers(workspaceId);
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
 
-  // Derive current user role in workspace
-  const currentMember = members?.find((m) => m.userId === user?.id);
+  const currentMember = members?.find(
+    (m) => m.userId === user?.id || m.user?.id === user?.id
+  );
   const currentUserRole = currentMember?.role || 'MEMBER';
 
   return (
