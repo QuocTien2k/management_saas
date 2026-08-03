@@ -44,6 +44,7 @@ export function useCreateTask(projectId: string) {
     mutationFn: (data: CreateTaskInput) => taskService.createTask(projectId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 }
@@ -78,6 +79,7 @@ export function useDeleteTask(projectId: string) {
     mutationFn: (taskId: string) => taskService.deleteTask(taskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
     onError: (err) => {
       toast.error(getErrorMessage(err, 'Không thể xóa công việc.'));
