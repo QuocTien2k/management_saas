@@ -157,13 +157,12 @@ export function TaskDetailModal({
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa công việc này?')) {
-      try {
-        await deleteTask.mutateAsync(taskId);
-        onOpenChange(false);
-      } catch (err) {
-        console.error('Failed to delete task:', err);
-      }
+    try {
+      await deleteTask.mutateAsync(taskId);
+      setConfirmDeleteOpen(false);
+      onOpenChange(false);
+    } catch (err) {
+      console.error('Failed to delete task:', err);
     }
   };
 
@@ -205,7 +204,7 @@ export function TaskDetailModal({
                   variant="ghost"
                   size="icon"
                   className="size-8 text-muted-foreground hover:text-destructive cursor-pointer rounded-lg hover:bg-destructive/10 mr-2"
-                  onClick={handleDelete}
+                  onClick={() => setConfirmDeleteOpen(true)}
                   title="Xóa công việc"
                 >
                   <Trash2Icon className="size-4" />
@@ -423,6 +422,18 @@ export function TaskDetailModal({
           </div>
         ) : null}
       </DialogContent>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="Xóa công việc"
+        description={`Bạn có chắc chắn muốn xóa công việc "${task?.title}"? Thao tác này không thể hoàn tác.`}
+        confirmText="Xóa vĩnh viễn"
+        cancelText="Hủy bỏ"
+        variant="destructive"
+        isLoading={deleteTask.isPending}
+        onConfirm={handleDelete}
+      />
     </Dialog>
   );
 }

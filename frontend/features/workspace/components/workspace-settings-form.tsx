@@ -21,6 +21,8 @@ import { WorkspaceAvatar } from '@/features/workspace/components/workspace-avata
 import { toast } from '@/lib/toast';
 import { getErrorMessage } from '@/lib/error';
 
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+
 interface WorkspaceSettingsFormProps {
   workspace: Workspace;
   currentUserRole?: WorkspaceRole;
@@ -38,6 +40,7 @@ export function WorkspaceSettingsForm({
   const isAdmin = currentUserRole === 'ADMIN' || isOwner;
 
   const [savedSuccess, setSavedSuccess] = React.useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
 
   const {
     register,
@@ -70,19 +73,15 @@ export function WorkspaceSettingsForm({
   };
 
   const handleDeleteWorkspace = async () => {
-    if (
-      confirm(
-        `CẢNH BÁO: Bạn có chắc chắn muốn xóa hẳn Workspace "${workspace.name}" không? Thao tác này không thể hoàn tác.`
-      )
-    ) {
-      try {
-        await deleteMutation.mutateAsync(workspace.id);
-        toast.success('Đã xóa Workspace thành công.');
-        router.push('/workspaces');
-      } catch (error) {
-        toast.error(getErrorMessage(error, 'Không thể xóa Workspace.'));
-        console.error('Failed to delete workspace:', error);
-      }
+    try {
+      await deleteMutation.mutateAsync(workspace.id);
+      toast.success('Đã xóa Workspace thành công.');
+      router.push('/workspaces');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Không thể xóa Workspace.'));
+      console.error('Failed to delete workspace:', error);
+    } finally {
+      setConfirmDeleteOpen(false);
     }
   };
 
@@ -205,7 +204,7 @@ export function WorkspaceSettingsForm({
           <CardFooter className="flex justify-end pt-2">
             <Button
               variant="destructive"
-              onClick={handleDeleteWorkspace}
+              onClick={() => setConfirmDeleteOpen(true)}
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (
@@ -223,6 +222,18 @@ export function WorkspaceSettingsForm({
           </CardFooter>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={`Xóa Workspace "${workspace.name}"`}
+        description={`Bạn có chắc chắn muốn xóa không gian làm việc "${workspace.name}"? Thao tác này sẽ xóa toàn bộ dự án, nhiệm vụ và dữ liệu liên quan. Thao tác này KHÔNG THỂ hoàn tác.`}
+        confirmText="Xóa vĩnh viễn"
+        cancelText="Hủy bỏ"
+        variant="destructive"
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleDeleteWorkspace}
+      />
     </div>
   );
 }

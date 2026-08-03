@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TaskAttachment } from '../../types/task.types';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface AttachmentListProps {
   taskId: string;
@@ -78,15 +79,16 @@ export function AttachmentList({
     }
   };
 
-  const handleDelete = async (attachmentId: string) => {
-    if (onDelete && window.confirm('Bạn có chắc chắn muốn xóa đính kèm này?')) {
+  const handleDelete = async () => {
+    if (attachmentToDelete && onDelete) {
       try {
-        setDeletingId(attachmentId);
-        await onDelete(attachmentId);
+        setDeletingId(attachmentToDelete);
+        await onDelete(attachmentToDelete);
       } catch (err) {
         console.error('Delete attachment failed:', err);
       } finally {
         setDeletingId(null);
+        setAttachmentToDelete(null);
       }
     }
   };
@@ -193,7 +195,7 @@ export function AttachmentList({
                     variant="ghost"
                     size="icon"
                     className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                    onClick={() => handleDelete(file.id)}
+                    onClick={() => setAttachmentToDelete(file.id)}
                     disabled={deletingId === file.id}
                     title="Xóa tệp"
                   >
@@ -210,6 +212,18 @@ export function AttachmentList({
         })}
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(attachmentToDelete)}
+        onOpenChange={(open) => !open && setAttachmentToDelete(null)}
+        title="Xóa tệp đính kèm"
+        description="Bạn có chắc chắn muốn xóa tệp đính kèm này khỏi công việc?"
+        confirmText="Xóa tệp"
+        cancelText="Hủy bỏ"
+        variant="destructive"
+        isLoading={Boolean(deletingId)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

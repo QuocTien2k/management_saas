@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import { Comment } from '../types/comment.types';
 import { useUpdateComment, useDeleteComment } from '../hooks/use-comments';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface CommentItemProps {
   comment: Comment;
@@ -20,6 +21,7 @@ export function CommentItem({ comment, taskId }: CommentItemProps) {
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [content, setContent] = React.useState(comment.content);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
 
   const updateComment = useUpdateComment(taskId);
   const deleteComment = useDeleteComment(taskId);
@@ -38,12 +40,11 @@ export function CommentItem({ comment, taskId }: CommentItemProps) {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
-      try {
-        await deleteComment.mutateAsync(comment.id);
-      } catch (error) {
-        console.error('Failed to delete comment:', error);
-      }
+    try {
+      await deleteComment.mutateAsync(comment.id);
+      setConfirmDeleteOpen(false);
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
     }
   };
 
@@ -85,7 +86,7 @@ export function CommentItem({ comment, taskId }: CommentItemProps) {
                 variant="ghost"
                 size="icon"
                 className="size-6 text-muted-foreground hover:text-destructive cursor-pointer"
-                onClick={handleDelete}
+                onClick={() => setConfirmDeleteOpen(true)}
               >
                 <Trash2Icon className="size-3" />
               </Button>
@@ -128,6 +129,18 @@ export function CommentItem({ comment, taskId }: CommentItemProps) {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="Xóa bình luận"
+        description="Bạn có chắc chắn muốn xóa bình luận này không?"
+        confirmText="Xóa bình luận"
+        cancelText="Hủy bỏ"
+        variant="destructive"
+        isLoading={deleteComment.isPending}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

@@ -31,6 +31,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+
 interface MemberListTableProps {
   workspaceId: string;
   members: WorkspaceMember[];
@@ -47,6 +49,8 @@ export function MemberListTable({
   const updateRoleMutation = useUpdateMemberRole(workspaceId);
   const removeMemberMutation = useRemoveMember(workspaceId);
 
+  const [memberToRemove, setMemberToRemove] = React.useState<{ id: string; name: string } | null>(null);
+
   const isOwner = currentUserRole === 'OWNER';
   const isAdmin = currentUserRole === 'ADMIN' || isOwner;
 
@@ -60,16 +64,21 @@ export function MemberListTable({
     }
   };
 
-  const handleRemove = async (memberId: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa/rời khỏi Workspace này?')) {
-      try {
-        await removeMemberMutation.mutateAsync(memberId);
-        toast.success('Thao tác thành công');
-      } catch (error) {
-        console.error('Failed to remove member:', error);
-        toast.error(getErrorMessage(error, 'Không thể thực hiện thao tác xóa/rời khỏi Workspace.'));
-      }
+  const confirmRemoveMember = async () => {
+    if (!memberToRemove) return;
+    try {
+      await removeMemberMutation.mutateAsync(memberToRemove.id);
+      toast.success('Thao tác xóa thành viên thành công');
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+      toast.error(getErrorMessage(error, 'Không thể thực hiện thao tác xóa thành viên.'));
+    } finally {
+      setMemberToRemove(null);
     }
+  };
+
+  const handleRemove = (memberId: string, memberName: string) => {
+    setMemberToRemove({ id: memberId, name: memberName });
   };
 
   const getRoleBadge = (role: WorkspaceRole) => {
@@ -175,7 +184,7 @@ export function MemberListTable({
                     <DropdownMenuContent align="end">
                       {isSelf ? (
                         <DropdownMenuItem
-                          onClick={() => handleRemove(member.id)}
+                          onClick={() => handleRemove(member.id, member.user?.fullname || member.user?.email || 'thành viên')}
                           className="text-destructive focus:text-destructive cursor-pointer"
                         >
                           <LogOutIcon className="size-4 mr-2" />
@@ -183,7 +192,7 @@ export function MemberListTable({
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem
-                          onClick={() => handleRemove(member.id)}
+                          onClick={() => handleRemove(member.id, member.user?.fullname || member.user?.email || 'thành viên')}
                           className="text-destructive focus:text-destructive cursor-pointer"
                         >
                           <Trash2Icon className="size-4 mr-2" />
@@ -199,5 +208,18 @@ export function MemberListTable({
         })}
       </TableBody>
     </Table>
+
+    <ConfirmDialog
+      open={Boolean(memberToRemove)}
+      onOpenChange={(open) => !open && setMemberToRemove(null)}
+      title="Xác nhận xóa thành viên"
+      description={`Bạn có chắc chắn muốn xóa thành viên "${memberToRemove?.name}" khỏi không gian làm việc này?`}
+      confirmText="Xóa thành viên"
+      cancelText="Hủy bỏ"
+      variant="destructive"
+      isLoading={removeMemberMutation.isPending}
+      onConfirm={confirmRemoveMember}
+    />
+    </>
   );
 }
