@@ -52,8 +52,8 @@ export default function ProjectBoardPage() {
     }
   }, [taskIdParam]);
 
-  const handleQuickCreateTask = (status: TaskStatus = 'TODO') => {
-    setCreateDefaultStatus(status);
+  const handleQuickCreateTask = () => {
+    setCreateDefaultStatus('TODO');
     setCreateTaskOpen(true);
   };
 
@@ -78,7 +78,7 @@ export default function ProjectBoardPage() {
       <ProjectHeader
         project={project}
         workspaceId={workspaceId}
-        onQuickCreateTask={canCreateTask ? () => handleQuickCreateTask('TODO') : undefined}
+        onQuickCreateTask={canCreateTask ? handleQuickCreateTask : undefined}
       />
 
       {/* Task Filter Bar */}

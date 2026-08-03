@@ -112,7 +112,7 @@ export function CreateTaskDialog({
       await createTask.mutateAsync({
         title: data.title,
         description: data.description,
-        status: data.status,
+        status: 'TODO',
         priority: data.priority,
         dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
         assigneeId: data.assigneeId === 'UNASSIGNED' ? undefined : data.assigneeId,
@@ -163,18 +163,15 @@ export function CreateTaskDialog({
           {/* Cột trạng thái & Độ ưu tiên */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold text-foreground">Trạng thái (Cột)</Label>
-              <Select value={currentStatus} onValueChange={(val) => setValue('status', val as TaskStatus)}>
-                <SelectTrigger className="h-10 text-sm bg-background w-full">
-                  <SelectValue placeholder="Chọn trạng thái">
-                    {statusMap[currentStatus] || 'Cần làm'}
+              <Label className="text-sm font-semibold text-foreground">Trạng thái (Mặc định)</Label>
+              <Select disabled value="TODO">
+                <SelectTrigger className="h-10 text-sm bg-muted/50 w-full cursor-not-allowed">
+                  <SelectValue placeholder="Cần làm">
+                    Cần làm (TODO)
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TODO">Cần làm</SelectItem>
-                  <SelectItem value="IN_PROGRESS">Đang thực hiện</SelectItem>
-                  <SelectItem value="IN_REVIEW">Đang duyệt</SelectItem>
-                  <SelectItem value="DONE">Hoàn thành</SelectItem>
+                  <SelectItem value="TODO">Cần làm (TODO)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
