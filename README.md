@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=nextjs,react,nestjs,ts,postgres,prisma,tailwind,socketio,vercel&perline=9"/>
+  <img src="https://skillicons.dev/icons?i=nextjs,react,nestjs,ts,postgres,prisma,tailwind,nodejs,vercel&perline=9"/>
 </p>
 
 <p align="center">
